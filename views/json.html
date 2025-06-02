@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON 포매터 & 검증 - Developer Tools Hub</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --secondary-color: #059669;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #06b6d4;
+            --dark-color: #374151;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            margin: 20px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.05) 10px,
+                rgba(255,255,255,0.05) 20px
+            );
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-50px) translateY(-50px); }
+            100% { transform: translateX(50px) translateY(50px); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            position: relative;
+            z-index: 2;
+            margin: 0;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 3;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            transform: translateX(-5px);
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        }
+
+        .code-textarea {
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            color: white;
+            margin-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-clear {
+            background: var(--danger-color);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            color: white;
+            margin-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-clear:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .result-section {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            position: relative;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .result-title {
+            font-weight: 700;
+            color: var(--dark-color);
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .copy-btn {
+            background: var(--info-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            background: #0891b2;
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: var(--success-color);
+            animation: pulse 0.5s;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .result-content {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            word-break: break-all;
+        }
+
+        .stats-section {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .features-section {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .features-title {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .examples-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .examples-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .example-item {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .example-item:hover {
+            background: #f1f5f9;
+            transform: translateY(-2px);
+        }
+
+        .example-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .example-description {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 10px;
+                border-radius: 20px;
+            }
+            
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .tool-card {
+                padding: 1.5rem;
+            }
+            
+            .btn-primary, .btn-secondary, .btn-clear {
+                width: 100%;
+                margin: 0.25rem 0;
+            }
+            
+            .result-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header">
+            <a href="/" class="back-btn">
+                <i class="fas fa-arrow-left"></i> 메인으로
+            </a>
+            <h1><i class="fas fa-brackets-curly"></i> JSON 포매터 & 검증</h1>
+            <p>JSON 데이터를 예쁘게 포맷하고 유효성을 검증하세요</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- JSON Input Section -->
+            <div class="tool-card">
+                <div class="form-group">
+                    <label for="jsonInput" class="form-label">
+                        <i class="fas fa-code"></i> JSON 입력
+                    </label>
+                    <textarea 
+                        id="jsonInput" 
+                        class="form-control code-textarea" 
+                        placeholder='{"name": "John", "age": 30, "city": "New York"}'
+                        rows="10"
+                    ></textarea>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <button id="formatBtn" class="btn btn-primary">
+                        <i class="fas fa-magic"></i> 포맷하기
+                    </button>
+                    <button id="minifyBtn" class="btn btn-secondary">
+                        <i class="fas fa-compress"></i> 압축하기
+                    </button>
+                    <button id="validateBtn" class="btn btn-secondary">
+                        <i class="fas fa-check-circle"></i> 검증하기
+                    </button>
+                    <button id="clearBtn" class="btn btn-clear">
+                        <i class="fas fa-trash"></i> 지우기
+                    </button>
+                </div>
+
+                <!-- Loading -->
+                <div id="loading" class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>처리 중...</p>
+                </div>
+
+                <!-- Result Section -->
+                <div id="resultSection" class="result-section" style="display: none;">
+                    <div class="result-header">
+                        <h4 class="result-title">
+                            <i class="fas fa-check-circle text-success"></i> 결과
+                        </h4>
+                        <button id="copyBtn" class="copy-btn">
+                            <i class="fas fa-copy"></i> 복사하기
+                        </button>
+                    </div>
+                    <div id="resultContent" class="result-content"></div>
+                </div>
+
+                <!-- Error Section -->
+                <div id="errorSection" class="error-message" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="errorMessage"></span>
+                </div>
+
+                <!-- Success Section -->
+                <div id="successSection" class="success-message" style="display: none;">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="successMessage"></span>
+                </div>
+
+                <!-- Stats Section -->
+                <div id="statsSection" class="stats-section" style="display: none;">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span id="keysCount" class="stat-number">0</span>
+                            <div class="stat-label">키 개수</div>
+                        </div>
+                        <div class="stat-item">
+                            <span id="sizeCount" class="stat-number">0</span>
+                            <div class="stat-label">크기 (바이트)</div>
+                        </div>
+                        <div class="stat-item">
+                            <span id="typeInfo" class="stat-number">-</span>
+                            <div class="stat-label">타입</div>
+                        </div>
+                        <div class="stat-item">
+                            <span id="linesCount" class="stat-number">0</span>
+                            <div class="stat-label">라인 수</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="features-section">
+                <h3 class="features-title">
+                    <i class="fas fa-star"></i> 주요 기능
+                </h3>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <div class="feature-title">자동 포맷팅</div>
+                        <div class="feature-description">JSON을 읽기 쉽게 자동으로 들여쓰기하고 줄바꿈합니다</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-compress"></i>
+                        </div>
+                        <div class="feature-title">압축 기능</div>
+                        <div class="feature-description">불필요한 공백을 제거하여 JSON 크기를 최소화합니다</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="feature-title">유효성 검증</div>
+                        <div class="feature-description">JSON 문법 오류를 감지하고 정확한 위치를 알려줍니다</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="feature-title">통계 정보</div>
+                        <div class="feature-description">키 개수, 크기, 타입 등 상세한 통계를 제공합니다</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Examples Section -->
+            <div class="examples-section">
+                <h3 class="examples-title">
+                    <i class="fas fa-lightbulb"></i> 예제 데이터
+                </h3>
+                
+                <div class="example-item" data-example="user">
+                    <div class="example-title">사용자 정보</div>
+                    <div class="example-description">기본적인 사용자 정보 JSON 예제</div>
+                </div>
+
+                <div class="example-item" data-example="product">
+                    <div class="example-title">상품 정보</div>
+                    <div class="example-description">전자상거래 상품 데이터 예제</div>
+                </div>
+
+                <div class="example-item" data-example="api">
+                    <div class="example-title">API 응답</div>
+                    <div class="example-description">일반적인 API 응답 형태 예제</div>
+                </div>
+
+                <div class="example-item" data-example="config">
+                    <div class="example-title">설정 파일</div>
+                    <div class="example-description">애플리케이션 설정 JSON 예제</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Example data
+        const examples = {
+            user: {
+                "id": 1,
+                "name": "홍길동",
+                "email": "hong@example.com",
+                "age": 30,
+                "address": {
+                    "street": "서울시 강남구",
+                    "zipcode": "12345",
+                    "city": "서울"
+                },
+                "phone": "010-1234-5678",
+                "website": "example.com",
+                "company": {
+                    "name": "테크회사",
+                    "catchPhrase": "혁신적인 기술",
+                    "bs": "시너지 효과"
+                }
+            },
+            product: {
+                "id": 1001,
+                "name": "MacBook Pro",
+                "description": "Apple의 최신 노트북",
+                "price": 2500000,
+                "currency": "KRW",
+                "category": "Electronics",
+                "brand": "Apple",
+                "specs": {
+                    "cpu": "M2 Pro",
+                    "memory": "16GB",
+                    "storage": "512GB SSD",
+                    "display": "14-inch Retina"
+                },
+                "availability": true,
+                "tags": ["laptop", "apple", "professional"],
+                "rating": 4.8,
+                "reviews": 1234
+            },
+            api: {
+                "status": "success",
+                "message": "데이터를 성공적으로 가져왔습니다",
+                "data": {
+                    "users": [
+                        {
+                            "id": 1,
+                            "name": "김철수",
+                            "role": "admin"
+                        },
+                        {
+                            "id": 2,
+                            "name": "박영희",
+                            "role": "user"
+                        }
+                    ],
+                    "total": 2,
+                    "page": 1,
+                    "limit": 10
+                },
+                "timestamp": "2024-01-15T10:30:00Z",
+                "version": "1.0.0"
+            },
+            config: {
+                "app": {
+                    "name": "MyApp",
+                    "version": "1.2.3",
+                    "debug": false,
+                    "port": 3000
+                },
+                "database": {
+                    "host": "localhost",
+                    "port": 5432,
+                    "name": "myapp_db",
+                    "ssl": true
+                },
+                "cache": {
+                    "enabled": true,
+                    "ttl": 3600,
+                    "provider": "redis"
+                },
+                "logging": {
+                    "level": "info",
+                    "file": "app.log",
+                    "rotate": true
+                }
+            }
+        };
+
+        // DOM elements
+        const jsonInput = document.getElementById('jsonInput');
+        const formatBtn = document.getElementById('formatBtn');
+        const minifyBtn = document.getElementById('minifyBtn');
+        const validateBtn = document.getElementById('validateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('resultSection');
+        const resultContent = document.getElementById('resultContent');
+        const errorSection = document.getElementById('errorSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const successSection = document.getElementById('successSection');
+        const successMessage = document.getElementById('successMessage');
+        const statsSection = document.getElementById('statsSection');
+        const keysCount = document.getElementById('keysCount');
+        const sizeCount = document.getElementById('sizeCount');
+        const typeInfo = document.getElementById('typeInfo');
+        const linesCount = document.getElementById('linesCount');
+
+        // Event listeners
+        formatBtn.addEventListener('click', () => processJSON('format'));
+        minifyBtn.addEventListener('click', () => processJSON('minify'));
+        validateBtn.addEventListener('click', () => processJSON('validate'));
+        clearBtn.addEventListener('click', clearInput);
+        copyBtn.addEventListener('click', copyResult);
+
+        // Example data event listeners
+        document.querySelectorAll('.example-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const exampleKey = item.getAttribute('data-example');
+                if (examples[exampleKey]) {
+                    jsonInput.value = JSON.stringify(examples[exampleKey], null, 2);
+                    hideMessages();
+                }
+            });
+        });
+
+        // Process JSON function
+        async function processJSON(action) {
+            const jsonString = jsonInput.value.trim();
+            
+            if (!jsonString) {
+                showError('JSON 문자열을 입력해주세요.');
+                return;
+            }
+
+            showLoading();
+            hideMessages();
+
+            try {
+                const response = await fetch('/api/json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        jsonString: jsonString,
+                        action: action
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (action === 'validate') {
+                        showSuccess('유효한 JSON 형식입니다!');
+                        showStats(result.stats);
+                    } else {
+                        showResult(result.result);
+                        showStats(result.stats);
+                        showSuccess(`JSON ${action === 'format' ? '포맷팅' : '압축'}이 완료되었습니다!`);
+                    }
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('서버와의 통신 중 오류가 발생했습니다.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // UI helper functions
+        function showLoading() {
+            loading.style.display = 'block';
+        }
+
+        function hideLoading() {
+            loading.style.display = 'none';
+        }
+
+        function showResult(result) {
+            resultContent.textContent = result;
+            resultSection.style.display = 'block';
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorSection.style.display = 'block';
+            resultSection.style.display = 'none';
+            statsSection.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successSection.style.display = 'block';
+            setTimeout(() => {
+                successSection.style.display = 'none';
+            }, 3000);
+        }
+
+        function showStats(stats) {
+            keysCount.textContent = stats.keys;
+            sizeCount.textContent = stats.size.toLocaleString();
+            typeInfo.textContent = stats.type;
+            linesCount.textContent = resultContent.textContent.split('\n').length;
+            statsSection.style.display = 'block';
+        }
+
+        function hideMessages() {
+            errorSection.style.display = 'none';
+            successSection.style.display = 'none';
+            resultSection.style.display = 'none';
+            statsSection.style.display = 'none';
+        }
+
+        function clearInput() {
+            jsonInput.value = '';
+            hideMessages();
+        }
+
+        function copyResult() {
+            const text = resultContent.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                copyBtn.classList.add('copied');
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> 복사됨';
+                setTimeout(() => {
+                    copyBtn.classList.remove('copied');
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> 복사하기';
+                }, 2000);
+            }).catch(err => {
+                console.error('복사 실패:', err);
+                showError('복사에 실패했습니다.');
+            });
+        }
+    </script>
+</body>
+</html>

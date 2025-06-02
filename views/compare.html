@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>코드 비교 도구 - Code Diff Viewer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,80 0,100"/></svg>');
+            background-size: cover;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            margin: 0;
+        }
+
+        .control-panel {
+            background: white;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .input-section {
+            background: white;
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .textarea-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .textarea-label {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: white;
+            padding: 0 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            z-index: 2;
+        }
+
+        .code-textarea {
+            width: 100%;
+            height: 300px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .code-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: white;
+        }
+
+        .compare-btn {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .compare-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .compare-btn:hover::before {
+            left: 100%;
+        }
+
+        .compare-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+        }
+
+        .results-section {
+            background: white;
+            padding: 2rem;
+            min-height: 400px;
+        }
+
+        .diff-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .diff-panel {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .diff-header {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .diff-content {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .line-container {
+            display: flex;
+            border-bottom: 1px solid #f1f5f9;
+            min-height: 24px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .line-number {
+            background: #f8fafc;
+            color: #64748b;
+            width: 50px;
+            padding: 4px 8px;
+            text-align: right;
+            border-right: 1px solid #e2e8f0;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-content {
+            padding: 4px 12px;
+            flex: 1;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .line-added {
+            background-color: #dcfce7;
+            border-left: 4px solid var(--success-color);
+        }
+
+        .line-removed {
+            background-color: #fee2e2;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .line-modified {
+            background-color: #fef3c7;
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .line-unchanged {
+            background-color: white;
+        }
+
+        .added-text {
+            background-color: #bbf7d0;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .removed-text {
+            background-color: #fecaca;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .stat-added .stat-number { color: var(--success-color); }
+        .stat-removed .stat-number { color: var(--danger-color); }
+        .stat-modified .stat-number { color: var(--warning-color); }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+
+        .loading i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ad-space {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            color: #64748b;
+            margin: 2rem 0;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .ad-space i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        footer {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        footer h5 {
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+        }
+
+        footer p {
+            color: #94a3b8;
+            margin: 0.5rem 0;
+        }
+
+        .footer-icon {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .diff-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .main-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-container {
+                flex-direction: column;
+            }
+            
+            .line-number {
+                width: 40px;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #cbd5e1;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-code-branch"></i> 코드 비교 도구</h1>
+            <p>WinMerge 스타일의 강력한 텍스트 및 코드 비교 도구</p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <div class="row">
+                <div class="col-lg-6 mb-3">
+                    <div class="textarea-container">
+                        <div class="textarea-label">
+                            <i class="fas fa-file-alt"></i> 원본 텍스트
+                        </div>
+                        <textarea id="leftText" class="code-textarea" placeholder="여기에 원본 텍스트나 코드를 입력하세요..."></textarea>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-3">
+                    <div class="textarea-container">
+                        <div class="textarea-label">
+                            <i class="fas fa-file-alt"></i> 비교할 텍스트
+                        </div>
+                        <textarea id="rightText" class="code-textarea" placeholder="여기에 비교할 텍스트나 코드를 입력하세요..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center">
+                <button class="compare-btn" onclick="compareTexts()">
+                    <i class="fas fa-exchange-alt"></i> 텍스트 비교하기
+                </button>
+            </div>
+        </div>
+
+        <!-- Ad Space -->
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section">
+            <div id="results">
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>비교 결과가 여기에 표시됩니다</h3>
+                    <p>위의 텍스트 입력란에 비교할 내용을 입력하고 '텍스트 비교하기' 버튼을 클릭하세요.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <h5><i class="fas fa-code footer-icon"></i>개발자 정보</h5>
+            <p><i class="fas fa-user footer-icon"></i>dev. magolee</p>
+            <p><i class="fas fa-phone footer-icon"></i>tel: 010-9105-9999</p>
+            <p><i class="fas fa-donate footer-icon"></i>후원: 국민은행 - 계좌번호: xxxx</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentDiff = null;
+
+        async function compareTexts() {
+            const leftText = document.getElementById('leftText').value;
+            const rightText = document.getElementById('rightText').value;
+            
+            if (!leftText.trim() && !rightText.trim()) {
+                alert('비교할 텍스트를 입력해주세요.');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('results').innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <h4>텍스트를 비교하고 있습니다...</h4>
+                    <p>잠시만 기다려주세요.</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ leftText, rightText }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('서버 응답 오류');
+                }
+
+                const differences = await response.json();
+                currentDiff = differences;
+                displayResults(differences, leftText, rightText);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = `
+                    <div class="text-center text-danger">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                        <h4>오류가 발생했습니다</h4>
+                        <p>서버와의 통신 중 문제가 발생했습니다. 다시 시도해주세요.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayResults(differences, leftText, rightText) {
+            const leftLines = leftText.split('\n');
+            const rightLines = rightText.split('\n');
+            
+            let addedCount = 0;
+            let removedCount = 0;
+            let modifiedCount = 0;
+
+            differences.forEach(part => {
+                if (part.added) addedCount++;
+                else if (part.removed) removedCount++;
+                else if (part.changed) modifiedCount++;
+            });
+
+            const statsHtml = `
+                <div class="stats-container">
+                    <div class="stat-card stat-added">
+                        <div class="stat-number">${addedCount}</div>
+                        <div class="stat-label">추가된 부분</div>
+                    </div>
+                    <div class="stat-card stat-removed">
+                        <div class="stat-number">${removedCount}</div>
+                        <div class="stat-label">삭제된 부분</div>
+                    </div>
+                    <div class="stat-card stat-modified">
+                        <div class="stat-number">${Math.abs(leftLines.length - rightLines.length)}</div>
+                        <div class="stat-label">라인 차이</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" style="color: var(--primary-color);">${differences.length}</div>
+                        <div class="stat-label">총 변경사항</div>
+                    </div>
+                </div>
+            `;
+
+            const diffHtml = createSideBySideDiff(leftText, rightText, differences);
+
+            document.getElementById('results').innerHTML = statsHtml + diffHtml;
+        }
+
+        function createSideBySideDiff(leftText, rightText, differences) {
+            const leftLines = leftText.split('\n');
+            const rightLines = rightText.split('\n');
+            
+            let leftHtml = '';
+            let rightHtml = '';
+            
+            // Process each line
+            const maxLines = Math.max(leftLines.length, rightLines.length);
+            
+            for (let i = 0; i < maxLines; i++) {
+                const leftLine = leftLines[i] || '';
+                const rightLine = rightLines[i] || '';
+                
+                // Determine line status
+                let leftClass = 'line-unchanged';
+                let rightClass = 'line-unchanged';
+                
+                if (i >= leftLines.length) {
+                    rightClass = 'line-added';
+                } else if (i >= rightLines.length) {
+                    leftClass = 'line-removed';
+                } else if (leftLine !== rightLine) {
+                    leftClass = 'line-modified';
+                    rightClass = 'line-modified';
+                }
+                
+                leftHtml += `
+                    <div class="line-container ${leftClass}">
+                        <div class="line-number">${i + 1}</div>
+                        <div class="line-content">${escapeHtml(leftLine)}</div>
+                    </div>
+                `;
+                
+                rightHtml += `
+                    <div class="line-container ${rightClass}">
+                        <div class="line-number">${i + 1}</div>
+                        <div class="line-content">${escapeHtml(rightLine)}</div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="diff-container">
+                    <div class="diff-panel">
+                        <div class="diff-header">
+                            <i class="fas fa-file-alt"></i>
+                            원본 텍스트 (${leftLines.length} lines)
+                        </div>
+                        <div class="diff-content">
+                            ${leftHtml}
+                        </div>
+                    </div>
+                    <div class="diff-panel">
+                        <div class="diff-header">
+                            <i class="fas fa-file-alt"></i>
+                            비교 텍스트 (${rightLines.length} lines)
+                        </div>
+                        <div class="diff-content">
+                            ${rightHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                compareTexts();
+            }
+        });
+
+        // Auto-resize textareas
+        document.querySelectorAll('.code-textarea').forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.max(300, this.scrollHeight) + 'px';
+            });
+        });
+    </script>
+</body>
+</html>

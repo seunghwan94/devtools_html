@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64 인코더 & 디코더 - Base64 Encoder & Decoder</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6; /* Added info color for some buttons */
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,80 0,100"/></svg>');
+            background-size: cover;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+            margin: 0;
+        }
+
+        .tool-section { /* Renamed from input-section for clarity */
+            background: white;
+            padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .textarea-container {
+            position: relative;
+            margin-bottom: 1.5rem; /* Increased margin */
+        }
+
+        .textarea-label {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: white;
+            padding: 0 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            z-index: 2;
+        }
+
+        .code-textarea {
+            width: 100%;
+            min-height: 200px; /* Adjusted height */
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .code-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: white;
+        }
+        .code-textarea.error {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+
+        .button-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .action-btn {
+            border: none;
+            color: white;
+            padding: 12px 25px; /* Slightly smaller padding */
+            border-radius: 50px;
+            font-size: 1rem; /* Slightly smaller font */
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-encode { background: linear-gradient(135deg, var(--success-color), #059669); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25); }
+        .btn-encode:hover { box-shadow: 0 12px 30px rgba(16, 185, 129, 0.35); }
+
+        .btn-decode { background: linear-gradient(135deg, var(--info-color), #2563eb); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25); }
+        .btn-decode:hover { box-shadow: 0 12px 30px rgba(59, 130, 246, 0.35); }
+        
+        .btn-swap { background: linear-gradient(135deg, var(--warning-color), #d97706); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25); }
+        .btn-swap:hover { box-shadow: 0 12px 30px rgba(245, 158, 11, 0.35); }
+
+        .btn-clear { background: linear-gradient(135deg, var(--danger-color), #c026d3); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25); }
+        .btn-clear:hover { box-shadow: 0 12px 30px rgba(239, 68, 68, 0.35); }
+
+
+        .ad-space {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            color: #64748b;
+            margin: 2rem 0;
+            min-height: 150px; /* Adjusted height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .ad-space i {
+            font-size: 2.5rem; /* Adjusted size */
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        footer {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 0; /* Adjusted as there's no separate result section */
+        }
+
+        footer h5 {
+            color: #e2e8f0;
+            margin-bottom: 1rem;
+        }
+
+        footer p {
+            color: #94a3b8;
+            margin: 0.5rem 0;
+        }
+
+        .footer-icon {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+        
+        .output-label-container {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-bottom: -0.5rem; /* Pulls label closer to textarea */
+        }
+
+        .copy-btn {
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-right: 15px; /* Align with textarea padding */
+            margin-top: -5px;  /* Align with textarea padding */
+        }
+        .copy-btn:hover {
+            background-color: #e2e8f0;
+        }
+        .copy-btn i {
+            margin-right: 4px;
+        }
+
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            .button-panel {
+                flex-direction: column;
+            }
+            .action-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1><i class="fas fa-sync-alt"></i> Base64 인코더 & 디코더</h1>
+            <p>텍스트를 Base64로 안전하게 인코딩하거나 디코딩합니다.</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="textarea-container">
+                <div class="textarea-label">
+                    <i class="fas fa-keyboard"></i> 원본 텍스트 (Input)
+                </div>
+                <textarea id="inputText" class="code-textarea" placeholder="여기에 인코딩 또는 디코딩할 텍스트를 입력하세요..."></textarea>
+            </div>
+
+            <div class="button-panel">
+                <button class="action-btn btn-encode" onclick="handleEncode()">
+                    <i class="fas fa-arrow-down"></i> Base64 인코딩
+                </button>
+                <button class="action-btn btn-decode" onclick="handleDecode()">
+                    <i class="fas fa-arrow-up"></i> Base64 디코딩
+                </button>
+                <button class="action-btn btn-swap" onclick="swapText()">
+                    <i class="fas fa-exchange-alt"></i> 입력/결과 바꾸기
+                </button>
+                <button class="action-btn btn-clear" onclick="clearText()">
+                    <i class="fas fa-trash-alt"></i> 모두 지우기
+                </button>
+            </div>
+
+            <div class="textarea-container">
+                 <div class="output-label-container">
+                    <div class="textarea-label">
+                        <i class="fas fa-file-alt"></i> 변환된 텍스트 (Result)
+                    </div>
+                    <button class="copy-btn" onclick="copyOutput()" id="copyButton">
+                        <i class="fas fa-copy"></i> 복사
+                    </button>
+                </div>
+                <textarea id="outputText" class="code-textarea" placeholder="변환 결과가 여기에 표시됩니다..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <h5><i class="fas fa-code footer-icon"></i>개발자 정보</h5>
+            <p><i class="fas fa-user footer-icon"></i>dev. magolee</p>
+            <p><i class="fas fa-phone footer-icon"></i>tel: 010-9105-9999</p>
+            <p><i class="fas fa-donate footer-icon"></i>후원: 국민은행 - 계좌번호: xxxx</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const inputTextElem = document.getElementById('inputText');
+        const outputTextElem = document.getElementById('outputText');
+        const copyButton = document.getElementById('copyButton');
+
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binary_string = window.atob(base64);
+            const len = binary_string.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function handleEncode() {
+            const originalText = inputTextElem.value;
+            outputTextElem.classList.remove('error');
+            if (!originalText.trim()) {
+                outputTextElem.value = '인코딩할 내용을 입력해주세요.';
+                return;
+            }
+            try {
+                const encoder = new TextEncoder(); // UTF-8 by default
+                const encodedData = encoder.encode(originalText);
+                outputTextElem.value = arrayBufferToBase64(encodedData);
+                updateCopyButtonState();
+            } catch (e) {
+                console.error("Encoding error:", e);
+                outputTextElem.value = "오류: 텍스트를 인코딩할 수 없습니다. 입력값을 확인해주세요.\n" + e.message;
+                outputTextElem.classList.add('error');
+                updateCopyButtonState(true);
+            }
+        }
+
+        function handleDecode() {
+            const base64Text = inputTextElem.value;
+            outputTextElem.classList.remove('error');
+             if (!base64Text.trim()) {
+                outputTextElem.value = '디코딩할 내용을 입력해주세요.';
+                return;
+            }
+            try {
+                // Basic validation for Base64 characters
+                if (!/^[A-Za-z0-9+/]*={0,2}$/.test(base64Text.trim().replace(/\s/g, '')) || base64Text.trim().length % 4 !== 0) {
+                     throw new Error("입력된 문자열이 유효한 Base64 형식이 아닙니다.");
+                }
+
+                const arrayBuffer = base64ToArrayBuffer(base64Text.trim().replace(/\s/g, '')); // Remove whitespace
+                const decoder = new TextDecoder(); // UTF-8 by default
+                outputTextElem.value = decoder.decode(arrayBuffer);
+                updateCopyButtonState();
+            } catch (e) {
+                console.error("Decoding error:", e);
+                outputTextElem.value = "오류: Base64를 디코딩할 수 없습니다. 입력값이 유효한 Base64 문자열인지 확인해주세요.\n" + e.message;
+                outputTextElem.classList.add('error');
+                updateCopyButtonState(true);
+            }
+        }
+
+        function swapText() {
+            const temp = inputTextElem.value;
+            inputTextElem.value = outputTextElem.value;
+            outputTextElem.value = temp;
+            outputTextElem.classList.remove('error'); // Clear error state on swap
+            updateCopyButtonState();
+        }
+
+        function clearText() {
+            inputTextElem.value = '';
+            outputTextElem.value = '';
+            outputTextElem.classList.remove('error');
+            updateCopyButtonState(true); // Disable copy button when cleared
+        }
+        
+        function copyOutput() {
+            if (!outputTextElem.value || outputTextElem.classList.contains('error')) {
+                alert('복사할 내용이 없거나 오류가 발생한 결과입니다.');
+                return;
+            }
+            outputTextElem.select();
+            document.execCommand('copy'); // Modern browsers might prefer navigator.clipboard.writeText
+            // navigator.clipboard.writeText(outputTextElem.value).then(() => {
+            //     alert('결과가 클립보드에 복사되었습니다!');
+            // }).catch(err => {
+            //     console.error('Failed to copy: ', err);
+            //     alert('클립보드 복사에 실패했습니다.');
+            // });
+            copyButton.innerHTML = '<i class="fas fa-check"></i> 복사됨!';
+            setTimeout(() => {
+                 copyButton.innerHTML = '<i class="fas fa-copy"></i> 복사';
+            }, 1500);
+        }
+        
+        function updateCopyButtonState(disabled = false) {
+            if (disabled || !outputTextElem.value.trim() || outputTextElem.classList.contains('error')) {
+                copyButton.disabled = true;
+                copyButton.style.opacity = '0.6';
+                copyButton.style.cursor = 'not-allowed';
+            } else {
+                copyButton.disabled = false;
+                copyButton.style.opacity = '1';
+                copyButton.style.cursor = 'pointer';
+            }
+        }
+
+        // Auto-resize textareas
+        [inputTextElem, outputTextElem].forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto'; // Reset height
+                this.style.height = Math.max(200, this.scrollHeight) + 'px';
+            });
+             // Initial call to set copy button state
+            textarea.addEventListener('input', () => updateCopyButtonState(!outputTextElem.value.trim() || outputTextElem.classList.contains('error')));
+        });
+        
+        // Initial state for copy button
+        updateCopyButtonState(true);
+
+
+        // Add keyboard shortcuts (Ctrl+Enter or Cmd+Enter for primary action - let's say Encode)
+        // You might want to add more specific shortcuts if needed.
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault(); 
+                if (document.activeElement === inputTextElem || inputTextElem.value) {
+                    // Prioritize encode if input has focus or value, otherwise decode if output has focus
+                    // This logic can be refined based on desired UX
+                    handleEncode(); 
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
