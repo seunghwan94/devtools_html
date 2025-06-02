@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL 단축기 - URL Shortener</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0; padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,80 0,100"/></svg>');
+            background-size: cover;
+        }
+        .header .tool-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; z-index: 1;
+        }
+        .header .tool-description {
+            font-size: 1.1rem; opacity: 0.9; position: relative; z-index: 1; margin: 0;
+        }
+
+        .tool-section {
+            background: white; padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label {
+            display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;
+        }
+        .form-control {
+            width: 100%; padding: 0.85rem 1rem; font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-control:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .form-control.is-invalid {
+            border-color: var(--danger-color);
+        }
+        .form-control.is-invalid:focus {
+             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        .invalid-feedback {
+            display: none; /* Initially hidden */
+            width: 100%; margin-top: .25rem; font-size: .875em; color: var(--danger-color);
+        }
+        .form-control.is-invalid ~ .invalid-feedback {
+            display: block; /* Show when input is invalid */
+        }
+
+
+        .action-btn {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            border: none; color: white; padding: 0.85rem 1.5rem;
+            border-radius: 8px; font-size: 1.05rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+            width: 100%;
+        }
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(16, 185, 129, 0.35);
+        }
+        .action-btn:disabled {
+             background: #ccc; cursor: not-allowed; box-shadow: none; transform: none;
+        }
+        
+        .output-area {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+        .output-area h5 { font-weight: 600; margin-bottom: 1rem; color: #374151;}
+        .output-field-container {
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        #shortenedUrlOutput {
+            flex-grow: 1;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background-color: white;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        .copy-btn {
+            border: none; color: white; padding: 0.85rem 1.25rem;
+            border-radius: 8px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+            white-space: nowrap;
+            background-color: var(--info-color);
+        }
+        .copy-btn:hover { background-color: #2563eb; }
+
+        .disclaimer {
+            font-size: 0.85rem;
+            color: #6b7280; /* gray-500 */
+            background-color: #fef3c7; /* amber-100 */
+            border: 1px solid #fcd34d; /* amber-300 */
+            color: #78350f; /* amber-900 */
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            text-align: center;
+        }
+        .disclaimer i { margin-right: 0.5rem;}
+
+
+        .ad-space {
+            background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 2rem; text-align: center; color: #64748b;
+            margin: 2rem 0; min-height: 150px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .ad-space i { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5; }
+
+        footer {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white; padding: 2rem; text-align: center; margin-top: 0;
+        }
+        footer h5 { color: #e2e8f0; margin-bottom: 1rem; }
+        footer p { color: #94a3b8; margin: 0.5rem 0; }
+        .footer-icon { color: var(--primary-color); margin-right: 8px; }
+        
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .main-container { margin: 10px; border-radius: 15px; }
+            .header .tool-title { font-size: 2rem; }
+            .output-field-container { flex-direction: column; gap: 0.5rem; }
+            #shortenedUrlOutput, .copy-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h3 class="tool-title"><i class="fas fa-link"></i> URL 단축기</h3>
+            <p class="tool-description">긴 URL을 짧고 기억하기 쉬운 링크로 변환할 수 있습니다</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="form-group">
+                <label for="longUrlInput">단축할 긴 URL 입력:</label>
+                <input type="url" class="form-control" id="longUrlInput" placeholder="https://example.com/very/long/url/to/be/shortened">
+                <div class="invalid-feedback" id="urlError">유효한 URL을 입력해주세요 (예: https://example.com).</div>
+            </div>
+            <button class="action-btn" id="shortenUrlBtn">
+                <i class="fas fa-compress-arrows-alt"></i> URL 단축하기
+            </button>
+
+            <div class="output-area hidden" id="outputArea">
+                <h5><i class="fas fa-check-circle text-success"></i> 단축된 URL:</h5>
+                <div class="output-field-container">
+                    <input type="text" class="form-control" id="shortenedUrlOutput" readonly>
+                    <button class="copy-btn" id="copyUrlBtn"><i class="fas fa-copy"></i> 복사</button>
+                </div>
+                 <div class="disclaimer mt-3">
+                    <i class="fas fa-info-circle"></i> <strong>알림:</strong> 이것은 프론트엔드 데모입니다. 실제 URL 단축 기능은 서버 백엔드가 필요합니다. 표시된 짧은 URL은 실제 작동하지 않는 예시입니다.
+                </div>
+            </div>
+        </div>
+
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <h5><i class="fas fa-code footer-icon"></i>개발자 정보</h5>
+            <p><i class="fas fa-user footer-icon"></i>dev. magolee</p>
+            <p><i class="fas fa-phone footer-icon"></i>tel: 010-9105-9999</p>
+            <p><i class="fas fa-donate footer-icon"></i>후원: 국민은행 - 계좌번호: xxxx</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const longUrlInput = document.getElementById('longUrlInput');
+        const urlError = document.getElementById('urlError');
+        const shortenUrlBtn = document.getElementById('shortenUrlBtn');
+        const outputArea = document.getElementById('outputArea');
+        const shortenedUrlOutput = document.getElementById('shortenedUrlOutput');
+        const copyUrlBtn = document.getElementById('copyUrlBtn');
+
+        shortenUrlBtn.addEventListener('click', handleShortenUrl);
+        copyUrlBtn.addEventListener('click', copyShortUrlToClipboard);
+        longUrlInput.addEventListener('input', () => { // Clear error on input
+            longUrlInput.classList.remove('is-invalid');
+        });
+
+
+        function isValidURL(string) {
+            try {
+                new URL(string);
+                // Basic check for scheme and hostname
+                const parsedUrl = new URL(string);
+                return (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") && parsedUrl.hostname;
+            } catch (_) {
+                return false;  
+            }
+        }
+
+        function generateRandomString(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            const charactersLength = characters.length;
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return result;
+        }
+
+        async function handleShortenUrl() {
+            const longUrl = longUrlInput.value.trim();
+
+            if (!longUrl) {
+                longUrlInput.classList.add('is-invalid');
+                urlError.textContent = 'URL을 입력해주세요.';
+                return;
+            }
+
+            if (!isValidURL(longUrl)) {
+                longUrlInput.classList.add('is-invalid');
+                urlError.textContent = '유효한 URL 형식이 아닙니다 (http:// 또는 https:// 로 시작해야 합니다).';
+                return;
+            }
+            longUrlInput.classList.remove('is-invalid');
+
+            shortenUrlBtn.disabled = true;
+            shortenUrlBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리 중...';
+
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 700));
+
+            const randomCode = generateRandomString(6);
+            // Use a common dummy domain for short URLs
+            const simulatedShortUrl = `https://short.est/${randomCode}`; 
+            
+            shortenedUrlOutput.value = simulatedShortUrl;
+            outputArea.classList.remove('hidden');
+            
+            shortenUrlBtn.disabled = false;
+            shortenUrlBtn.innerHTML = '<i class="fas fa-compress-arrows-alt"></i> URL 단축하기';
+        }
+
+        function copyShortUrlToClipboard() {
+            if (!shortenedUrlOutput.value) {
+                alert("복사할 단축 URL이 없습니다.");
+                return;
+            }
+            shortenedUrlOutput.select();
+            try {
+                document.execCommand('copy');
+                copyUrlBtn.innerHTML = '<i class="fas fa-check"></i> 복사됨!';
+                setTimeout(() => {
+                    copyUrlBtn.innerHTML = '<i class="fas fa-copy"></i> 복사';
+                }, 1500);
+            } catch (err) {
+                alert('클립보드 복사에 실패했습니다. 수동으로 복사해주세요.');
+                console.error('Copy failed', err);
+            }
+        }
+    </script>
+</body>
+</html>

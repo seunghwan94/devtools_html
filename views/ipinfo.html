@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP 주소 정보 확인 - IP Address Lookup</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0; padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,80 0,100"/></svg>');
+            background-size: cover;
+        }
+        .header .tool-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; z-index: 1;
+        }
+        .header .tool-description {
+            font-size: 1.1rem; opacity: 0.9; position: relative; z-index: 1; margin: 0;
+        }
+
+        .tool-section {
+            background: white; padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .input-group-custom {
+            display: flex; gap: 0.75rem; margin-bottom: 1.5rem;
+        }
+        .form-control {
+            flex-grow: 1; padding: 0.85rem 1rem; font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-control:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .action-btn {
+            background-color: var(--primary-color);
+            border: none; color: white; padding: 0.85rem 1.25rem;
+            border-radius: 8px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .action-btn:hover {
+            background-color: #4f46e5; /* A bit darker primary */
+            transform: translateY(-1px);
+        }
+        .action-btn:disabled {
+             background: #ccc; cursor: not-allowed; transform: none;
+        }
+        .btn-my-ip {
+            background-color: var(--info-color);
+        }
+        .btn-my-ip:hover {
+            background-color: #2563eb;
+        }
+
+
+        #ipInfoResults {
+            margin-top: 2rem;
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        #ipInfoResults .loading-placeholder, 
+        #ipInfoResults .error-placeholder {
+            text-align: center; color: #6b7280; padding: 2rem; font-style: italic;
+        }
+        #ipInfoResults .loading-placeholder i { font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary-color); }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        .info-item {
+            background-color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .info-item .label {
+            display: block; font-size: 0.8rem; color: #6b7280; margin-bottom: 0.25rem; font-weight: 500;
+        }
+        .info-item .value {
+            font-size: 1rem; color: #1f2937; font-weight: 600; word-break: break-all;
+        }
+        .info-item .value a {
+            color: var(--primary-color); text-decoration: none;
+        }
+        .info-item .value a:hover { text-decoration: underline; }
+        
+        #ipErrorDisplay {
+            background-color: #fee2e2; /* red-100 */
+            color: #991b1b; /* red-800 */
+            border: 1px solid #fecaca; /* red-200 */
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+
+        .ad-space {
+            background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 2rem; text-align: center; color: #64748b;
+            margin: 2rem 0; min-height: 150px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .ad-space i { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5; }
+
+        footer {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white; padding: 2rem; text-align: center; margin-top: 0;
+        }
+        footer h5 { color: #e2e8f0; margin-bottom: 1rem; }
+        footer p { color: #94a3b8; margin: 0.5rem 0; }
+        .footer-icon { color: var(--primary-color); margin-right: 8px; }
+        
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .main-container { margin: 10px; border-radius: 15px; }
+            .header .tool-title { font-size: 2rem; }
+            .input-group-custom { flex-direction: column; }
+            .action-btn { width: 100%; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h3 class="tool-title"><i class="fas fa-map-marker-alt"></i> IP 주소 정보 확인</h3>
+            <p class="tool-description">IP 주소의 위치, ISP, 도메인 등 상세 정보를 조회할 수 있습니다</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="input-group-custom">
+                <input type="text" class="form-control" id="ipAddressInput" placeholder="조회할 IP 주소 입력 (예: 8.8.8.8)">
+                <button class="action-btn" id="lookupIpBtn" title="입력한 IP 조회">
+                    <i class="fas fa-search"></i> IP 정보 조회
+                </button>
+                <button class="action-btn btn-my-ip" id="myIpBtn" title="내 IP 주소 정보 보기">
+                    <i class="fas fa-user-secret"></i> 내 IP 정보
+                </button>
+            </div>
+            <div id="ipErrorDisplay" class="hidden"></div>
+
+            <div id="ipInfoResults">
+                <div class="loading-placeholder">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>IP 정보를 불러오는 중입니다...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <h5><i class="fas fa-code footer-icon"></i>개발자 정보</h5>
+            <p><i class="fas fa-user footer-icon"></i>dev. magolee</p>
+            <p><i class="fas fa-phone footer-icon"></i>tel: 010-9105-9999</p>
+            <p><i class="fas fa-donate footer-icon"></i>후원: 국민은행 - 계좌번호: xxxx</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const ipAddressInput = document.getElementById('ipAddressInput');
+        const lookupIpBtn = document.getElementById('lookupIpBtn');
+        const myIpBtn = document.getElementById('myIpBtn');
+        const ipInfoResults = document.getElementById('ipInfoResults');
+        const ipErrorDisplay = document.getElementById('ipErrorDisplay');
+
+        const API_FIELDS = "status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query";
+        const API_BASE_URL = "https://ip-api.com/json/";
+
+        async function fetchIpInfo(ipAddress = "") {
+            ipInfoResults.innerHTML = `
+                <div class="loading-placeholder">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>IP 정보를 불러오는 중입니다...</p>
+                </div>`;
+            ipErrorDisplay.classList.add('hidden');
+            ipErrorDisplay.textContent = '';
+            lookupIpBtn.disabled = true;
+            myIpBtn.disabled = true;
+
+            try {
+                const apiUrl = `${API_BASE_URL}${ipAddress}?fields=${API_FIELDS}&lang=ko`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+                }
+                const data = await response.json();
+
+                if (data.status === "success") {
+                    displayIpInfo(data);
+                } else {
+                    throw new Error(data.message || "알 수 없는 API 오류가 발생했습니다.");
+                }
+            } catch (error) {
+                console.error("Error fetching IP info:", error);
+                displayError(error.message);
+            } finally {
+                lookupIpBtn.disabled = false;
+                myIpBtn.disabled = false;
+            }
+        }
+
+        function displayIpInfo(data) {
+            let resultsHTML = '<h4 class="mb-3">IP 정보: <span class="text-primary fw-bold">' + escapeHTML(data.query) + '</span></h4>';
+            resultsHTML += '<div class="info-grid">';
+
+            const infoMap = [
+                { label: "IP 주소", value: data.query, icon: "fas fa-network-wired" },
+                { label: "국가", value: `${data.country} (${data.countryCode})`, icon: "fas fa-flag" },
+                { label: "지역", value: data.regionName, icon: "fas fa-map-marked-alt" },
+                { label: "도시", value: data.city, icon: "fas fa-city" },
+                { label: "우편번호", value: data.zip, icon: "fas fa-mail-bulk" },
+                { label: "시간대", value: data.timezone, icon: "fas fa-clock" },
+                { label: "ISP", value: data.isp, icon: "fas fa-wifi" },
+                { label: "기관", value: data.org, icon: "fas fa-building" },
+                { label: "ASN", value: data.as, icon: "fas fa-sitemap" },
+                { 
+                    label: "위치 (위도, 경도)", 
+                    value: `${data.lat}, ${data.lon}`, 
+                    icon: "fas fa-compass",
+                    mapLink: `https://www.openstreetmap.org/?mlat=${data.lat}&mlon=${data.lon}#map=11/${data.lat}/${data.lon}`
+                }
+            ];
+
+            infoMap.forEach(item => {
+                if (item.value) { // Only display if value exists
+                    let valueHTML = escapeHTML(item.value);
+                    if(item.mapLink){
+                        valueHTML += ` <a href="${item.mapLink}" target="_blank" title="지도에서 보기"><i class="fas fa-external-link-alt fa-xs"></i></a>`;
+                    }
+                    resultsHTML += `
+                        <div class="info-item">
+                            <span class="label"><i class="${item.icon} me-1 text-muted"></i> ${item.label}</span>
+                            <span class="value">${valueHTML}</span>
+                        </div>`;
+                }
+            });
+            resultsHTML += '</div>';
+            ipInfoResults.innerHTML = resultsHTML;
+        }
+
+        function displayError(message) {
+            ipInfoResults.innerHTML = `
+                <div class="error-placeholder">
+                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                    <p>정보를 불러올 수 없습니다.</p>
+                </div>`;
+            ipErrorDisplay.textContent = `오류: ${message}`;
+            ipErrorDisplay.classList.remove('hidden');
+        }
+        
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return str.replace(/[&<>"']/g, match => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[match]));
+        }
+
+        lookupIpBtn.addEventListener('click', () => {
+            const ipToLookup = ipAddressInput.value.trim();
+            if (ipToLookup) {
+                fetchIpInfo(ipToLookup);
+            } else {
+                // fetchIpInfo(); // Or display a message to enter an IP
+                ipErrorDisplay.textContent = '조회할 IP 주소를 입력해주세요. 내 IP를 보려면 "내 IP 정보" 버튼을 클릭하세요.';
+                ipErrorDisplay.classList.remove('hidden');
+                ipInfoResults.innerHTML = `<div class="error-placeholder"><p>조회할 IP 주소를 입력하세요.</p></div>`;
+            }
+        });
+
+        myIpBtn.addEventListener('click', () => {
+            ipAddressInput.value = ''; // Clear input when fetching own IP
+            fetchIpInfo();
+        });
+        
+        ipAddressInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                lookupIpBtn.click();
+            }
+        });
+
+        // Fetch user's IP on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchIpInfo();
+        });
+    </script>
+</body>
+</html>
