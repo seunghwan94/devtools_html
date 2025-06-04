@@ -345,6 +345,12 @@
                 outputTextElem.value = '인코딩할 내용을 입력해주세요.';
                 return;
             }
+            
+            if (originalText.length > 500000) {
+                alert("500KB 이하만 인코딩 가능합니다.");
+                return;
+            }
+
             try {
                 const encoder = new TextEncoder(); // UTF-8 by default
                 const encodedData = encoder.encode(originalText);
