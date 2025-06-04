@@ -384,7 +384,11 @@ input[type="range"].form-range::-moz-range-track {
                 alert('이미지 파일만 업로드 가능합니다. (JPG, PNG, WebP, GIF)');
                 return;
             }
-            
+
+            if (file.size > 10 * 1024 * 1024) {
+                alert('10 MB 이하의 이미지 파일만 업로드할 수 있습니다.');
+                return;
+            }    
             originalFile = file;
             fileNameDisplay.textContent = `선택된 파일: ${originalFile.name}`;
 

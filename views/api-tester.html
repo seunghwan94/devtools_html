@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REST API 퀵 테스터 - REST API Quick Tester</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0; padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,80 0,100"/></svg>');
+            background-size: cover;
+        }
+        .header .tool-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; z-index: 1;
+        }
+        .header .tool-description {
+            font-size: 1.1rem; opacity: 0.9; position: relative; z-index: 1; margin: 0;
+        }
+
+        .tool-section {
+            background: white; padding: 2rem;
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem; /* 6px */
+            padding: 0.6rem 0.9rem;
+            font-size: 0.95rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+            outline: 0;
+        }
+        textarea.form-control {
+            min-height: 120px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .request-url-group { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        #httpMethodSelect { flex: 0 0 120px; }
+        #apiUrlInput { flex-grow: 1; }
+
+        .nav-tabs .nav-link {
+            color: var(--primary-color);
+            border: 1px solid transparent;
+            border-top-left-radius: 0.375rem;
+            border-top-right-radius: 0.375rem;
+        }
+        .nav-tabs .nav-link.active {
+            color: #4f46e5;
+            background-color: #fff;
+            border-color: var(--border-color) var(--border-color) #fff;
+            font-weight: 600;
+        }
+        .tab-content {
+            border: 1px solid var(--border-color);
+            border-top: none;
+            padding: 1.5rem;
+            border-bottom-left-radius: 0.375rem;
+            border-bottom-right-radius: 0.375rem;
+            background-color: var(--light-bg);
+        }
+
+        .key-value-pair { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .key-value-pair input { flex-grow: 1; }
+        .key-value-pair button { flex-shrink: 0; }
+
+        .btn-sm-custom { padding: 0.25rem 0.5rem; font-size: 0.8rem; }
+
+        #sendRequestBtn {
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            border: none; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 50px; font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+            display: block; width: 100%; margin-top: 1.5rem; margin-bottom: 2rem;
+        }
+        #sendRequestBtn:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(16, 185, 129, 0.3); }
+        #sendRequestBtn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .response-status-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem; font-size: 0.9rem;
+            padding: 0.75rem; background-color: var(--light-bg); border-radius: 0.375rem;
+            border: 1px solid var(--border-color);
+        }
+        #responseStatus.status-success { color: var(--success-color); font-weight: bold; }
+        #responseStatus.status-error { color: var(--danger-color); font-weight: bold; }
+        #responseStatus.status-info { color: var(--info-color); font-weight: bold; }
+        
+        .response-panel .tab-content { min-height: 200px; background-color: #fff; }
+        #responseBodyOutput, #responseHeadersOutput {
+             white-space: pre-wrap; word-break: break-all;
+             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace; font-size: 0.85rem;
+        }
+        
+        .cors-disclaimer {
+            font-size: 0.85rem; color: #78350f; background-color: #fefce8;
+            border: 1px solid #fde047; padding: 0.75rem 1rem;
+            border-radius: 8px; margin-top: 1.5rem; text-align: center;
+        }
+        .cors-disclaimer i { margin-right: 0.3rem; }
+        #apiErrorDisplay {
+            background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca;
+            padding: 0.75rem 1rem; border-radius: 8px; margin-top: 1rem; font-size: 0.9rem;
+        }
+
+        .ad-space {
+            background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 1.5rem; text-align: center; color: #64748b;
+            margin: 1.5rem 20px 0; 
+            min-height: 100px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .ad-space i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
+
+        footer {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white; padding: 1.5rem; text-align: center;
+        }
+        footer h5 { color: #e2e8f0; margin-bottom: 0.75rem; font-size: 1.1rem; }
+        footer p { color: #94a3b8; margin: 0.3rem 0; font-size: 0.9rem;}
+        .footer-icon { color: var(--primary-color); margin-right: 8px; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h3 class="tool-title"><i class="fas fa-rocket"></i> REST API 퀵 테스터</h3>
+            <p class="tool-description">헤더 · 바디 입력 후 응답을 실시간으로 확인할 수 있습니다</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="request-setup">
+                <div class="request-url-group">
+                    <select id="httpMethodSelect" class="form-select">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="PATCH">PATCH</option>
+                        <option value="HEAD">HEAD</option>
+                        <option value="OPTIONS">OPTIONS</option>
+                    </select>
+                    <input type="url" id="apiUrlInput" class="form-control" placeholder="API 엔드포인트 URL을 입력하세요 (예: https://api.example.com/data)">
+                </div>
+
+                <ul class="nav nav-tabs" id="requestTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="headers-tab" data-bs-toggle="tab" data-bs-target="#headers-content" type="button" role="tab" aria-controls="headers-content" aria-selected="true">헤더 (Headers)</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="body-tab" data-bs-toggle="tab" data-bs-target="#body-content" type="button" role="tab" aria-controls="body-content" aria-selected="false">본문 (Body)</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="requestTabsContent">
+                    <div class="tab-pane fade show active" id="headers-content" role="tabpanel" aria-labelledby="headers-tab">
+                        <div id="headersContainer">
+                            </div>
+                        <button type="button" id="addHeaderBtn" class="btn btn-outline-primary btn-sm-custom mt-2">
+                            <i class="fas fa-plus"></i> 헤더 추가
+                        </button>
+                    </div>
+                    <div class="tab-pane fade" id="body-content" role="tabpanel" aria-labelledby="body-tab">
+                        <div class="form-group">
+                            <label for="bodyTypeSelect">본문 타입:</label>
+                            <select id="bodyTypeSelect" class="form-select form-select-sm mb-2" style="max-width: 200px;">
+                                <option value="none">None</option>
+                                <option value="application/json">JSON</option>
+                                <option value="text/plain">Text</option>
+                                <option value="application/xml">XML</option>
+                                <option value="application/x-www-form-urlencoded">Form URL Encoded</option>
+                            </select>
+                            <textarea id="requestBodyInput" class="form-control" rows="6" placeholder="요청 본문을 입력하세요... (GET/HEAD 메소드는 본문을 사용하지 않습니다)"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="sendRequestBtn" type="button"><i class="fas fa-paper-plane"></i> 요청 보내기</button>
+            
+            <div class="cors-disclaimer">
+                <i class="fas fa-exclamation-triangle"></i> <strong>CORS 안내:</strong> 이 도구는 브라우저에서 직접 API 요청을 보냅니다. 대상 API 서버에 CORS 정책이 올바르게 설정되어 있지 않으면 (예: <code>Access-Control-Allow-Origin</code> 헤더 누락), 브라우저가 요청을 차단할 수 있습니다.
+            </div>
+            <div id="apiErrorDisplay" class="hidden"></div>
+
+
+            <div class="response-panel mt-4">
+                <h4><i class="fas fa-reply"></i> 응답 (Response)</h4>
+                <div class="response-status-bar">
+                    <div>상태: <strong id="responseStatus">대기 중...</strong></div>
+                    <div>시간: <strong id="responseTime">0 ms</strong></div>
+                </div>
+                <ul class="nav nav-tabs" id="responseTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="response-body-tab" data-bs-toggle="tab" data-bs-target="#response-body-content" type="button" role="tab" aria-controls="response-body-content" aria-selected="true">본문 (Body)</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="response-headers-tab" data-bs-toggle="tab" data-bs-target="#response-headers-content" type="button" role="tab" aria-controls="response-headers-content" aria-selected="false">헤더 (Headers)</button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="responseTabsContent">
+                    <div class="tab-pane fade show active" id="response-body-content" role="tabpanel" aria-labelledby="response-body-tab">
+                        <pre id="responseBodyOutput">응답 내용이 여기에 표시됩니다.</pre>
+                    </div>
+                    <div class="tab-pane fade" id="response-headers-content" role="tabpanel" aria-labelledby="response-headers-tab">
+                        <pre id="responseHeadersOutput">응답 헤더가 여기에 표시됩니다.</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <h5><i class="fas fa-code footer-icon"></i>개발자 정보</h5>
+            <p><i class="fas fa-user footer-icon"></i>dev. magolee</p>
+            <p><i class="fas fa-phone footer-icon"></i>tel: 010-9105-9999</p>
+            <p><i class="fas fa-donate footer-icon"></i>후원: 국민은행 - 계좌번호: xxxx</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const httpMethodSelect = document.getElementById('httpMethodSelect');
+        const apiUrlInput = document.getElementById('apiUrlInput');
+        const headersContainer = document.getElementById('headersContainer');
+        const addHeaderBtn = document.getElementById('addHeaderBtn');
+        const bodyTypeSelect = document.getElementById('bodyTypeSelect');
+        const requestBodyInput = document.getElementById('requestBodyInput');
+        const sendRequestBtn = document.getElementById('sendRequestBtn');
+        
+        const responseStatus = document.getElementById('responseStatus');
+        const responseTime = document.getElementById('responseTime');
+        const responseBodyOutput = document.getElementById('responseBodyOutput');
+        const responseHeadersOutput = document.getElementById('responseHeadersOutput');
+        const apiErrorDisplay = document.getElementById('apiErrorDisplay');
+        const requestBodyTabContent = document.getElementById('body-content');
+
+        // Initial header row
+        addHeaderRow(); 
+
+        addHeaderBtn.addEventListener('click', addHeaderRow);
+        sendRequestBtn.addEventListener('click', sendRequest);
+        
+        httpMethodSelect.addEventListener('change', toggleRequestBody);
+        bodyTypeSelect.addEventListener('change', updateContentTypeHeader);
+
+
+        function toggleRequestBody() {
+            const method = httpMethodSelect.value.toUpperCase();
+            if (['GET', 'HEAD', 'DELETE', 'OPTIONS'].includes(method)) {
+                requestBodyInput.disabled = true;
+                bodyTypeSelect.disabled = true;
+                requestBodyInput.placeholder = `${method} 메소드는 일반적으로 본문을 사용하지 않습니다.`;
+                 // Optionally, switch to Headers tab if Body was active and becomes disabled
+                const bodyTabButton = document.getElementById('body-tab');
+                if (bodyTabButton.classList.contains('active')) {
+                    const headersTabButton = document.getElementById('headers-tab');
+                    new bootstrap.Tab(headersTabButton).show();
+                }
+            } else {
+                requestBodyInput.disabled = false;
+                bodyTypeSelect.disabled = false;
+                requestBodyInput.placeholder = '요청 본문을 입력하세요...';
+            }
+        }
+        toggleRequestBody(); // Initial check
+
+        function updateContentTypeHeader() {
+            const bodyType = bodyTypeSelect.value;
+            if (bodyType !== 'none') {
+                // Check if Content-Type header already exists
+                let contentTypeExists = false;
+                const headerKeyInputs = headersContainer.querySelectorAll('input[placeholder="헤더 이름"]');
+                headerKeyInputs.forEach(input => {
+                    if (input.value.toLowerCase() === 'content-type') {
+                        contentTypeExists = true;
+                        input.closest('.key-value-pair').querySelector('input[placeholder="헤더 값"]').value = bodyType;
+                    }
+                });
+                if (!contentTypeExists) {
+                    addHeaderRow('Content-Type', bodyType);
+                }
+            }
+        }
+
+
+        function addHeaderRow(key = '', value = '') {
+            const row = document.createElement('div');
+            row.className = 'key-value-pair';
+            row.innerHTML = `
+                <input type="text" class="form-control form-control-sm" placeholder="헤더 이름" value="${escapeHTML(key)}">
+                <input type="text" class="form-control form-control-sm" placeholder="헤더 값" value="${escapeHTML(value)}">
+                <button type="button" class="btn btn-danger btn-sm-custom remove-header-btn"><i class="fas fa-trash-alt"></i></button>
+            `;
+            row.querySelector('.remove-header-btn').addEventListener('click', () => row.remove());
+            headersContainer.appendChild(row);
+        }
+
+        async function sendRequest() {
+            const url = apiUrlInput.value.trim();
+            const method = httpMethodSelect.value;
+
+            if (!url) {
+                showError("API URL을 입력해주세요.");
+                return;
+            }
+            try {
+                new URL(url); // Basic URL validation
+            } catch (e) {
+                showError("유효하지 않은 URL 형식입니다.");
+                return;
+            }
+            
+            clearResponse();
+            sendRequestBtn.disabled = true;
+            sendRequestBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 요청 중...';
+
+            const headers = new Headers();
+            const headerRows = headersContainer.querySelectorAll('.key-value-pair');
+            headerRows.forEach(row => {
+                const keyInput = row.querySelector('input[placeholder="헤더 이름"]');
+                const valueInput = row.querySelector('input[placeholder="헤더 값"]');
+                if (keyInput.value.trim()) {
+                    headers.append(keyInput.value.trim(), valueInput.value.trim());
+                }
+            });
+
+            const requestOptions = {
+                method: method,
+                headers: headers,
+            };
+
+            if (!['GET', 'HEAD'].includes(method.toUpperCase())) {
+                const bodyType = bodyTypeSelect.value;
+                if (bodyType !== 'none') {
+                    requestOptions.body = requestBodyInput.value;
+                     // Ensure Content-Type is set if body exists and type selected
+                    if (!headers.has('Content-Type') && bodyType !== 'none') {
+                        headers.set('Content-Type', bodyType);
+                    }
+                }
+            }
+            
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch(url, requestOptions);
+                const endTime = performance.now();
+
+                responseTime.textContent = `${Math.round(endTime - startTime)} ms`;
+                responseStatus.textContent = `${response.status} ${response.statusText}`;
+                responseStatus.className = response.ok ? 'status-success' : (response.status >= 400 && response.status < 500 ? 'status-error' : 'status-info');
+
+
+                let responseHeadersText = '';
+                response.headers.forEach((value, key) => {
+                    responseHeadersText += `${key}: ${value}\n`;
+                });
+                responseHeadersOutput.textContent = responseHeadersText || '응답 헤더 없음';
+
+                const contentType = response.headers.get("content-type");
+                let responseBodyData = await response.text(); // Get text first
+
+                if (contentType && contentType.includes("application/json") && responseBodyData) {
+                    try {
+                        const jsonData = JSON.parse(responseBodyData);
+                        responseBodyOutput.textContent = JSON.stringify(jsonData, null, 2); // Pretty print JSON
+                    } catch (e) {
+                        // If JSON parsing fails, show raw text
+                        responseBodyOutput.textContent = responseBodyData || '응답 본문 없음';
+                    }
+                } else {
+                     responseBodyOutput.textContent = responseBodyData || '응답 본문 없음';
+                }
+
+            } catch (error) { // Network error, CORS error etc.
+                const endTime = performance.now();
+                responseTime.textContent = `${Math.round(endTime - startTime)} ms`;
+                console.error("Fetch error:", error);
+                responseStatus.textContent = '요청 실패';
+                responseStatus.className = 'status-error';
+                responseBodyOutput.textContent = `오류: ${error.message}\n\nCORS 정책 위반일 가능성이 높습니다. 브라우저 개발자 콘솔(F12)에서 자세한 오류를 확인하세요.`;
+                responseHeadersOutput.textContent = '오류로 인해 헤더를 가져올 수 없음';
+                showError(`요청 처리 중 오류 발생: ${error.message}`);
+            } finally {
+                sendRequestBtn.disabled = false;
+                sendRequestBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 요청 보내기';
+            }
+        }
+        
+        function clearResponse(){
+            responseStatus.textContent = '대기 중...';
+            responseStatus.className = '';
+            responseTime.textContent = '0 ms';
+            responseBodyOutput.textContent = '응답 내용이 여기에 표시됩니다.';
+            responseHeadersOutput.textContent = '응답 헤더가 여기에 표시됩니다.';
+            apiErrorDisplay.classList.add('hidden');
+            apiErrorDisplay.textContent = '';
+        }
+
+        function showError(message) {
+            apiErrorDisplay.textContent = message;
+            apiErrorDisplay.classList.remove('hidden');
+        }
+        
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return str.replace(/[&<>"']/g, match => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[match]));
+        }
+
+    </script>
+</body>
+</html>
