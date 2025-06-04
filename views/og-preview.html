@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OG/Twitter 카드 미리보기 - SNS Card Previewer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-muted-light: #6b7280; /* gray-500 */
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0; padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,80 0,100"/></svg>');
+            background-size: cover;
+        }
+        .header .tool-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; z-index: 1;
+        }
+        .header .tool-description {
+            font-size: 1.1rem; opacity: 0.9; position: relative; z-index: 1; margin: 0;
+        }
+
+        .tool-section {
+            background: white; padding: 2rem;
+        }
+        
+        .input-group-custom {
+            display: flex; gap: 0.75rem; margin-bottom: 1.5rem;
+        }
+        .form-control {
+            flex-grow: 1; padding: 0.85rem 1rem; font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-control:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .action-btn {
+            background-color: var(--primary-color);
+            border: none; color: white; padding: 0.85rem 1.25rem;
+            border-radius: 8px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .action-btn:hover {
+            background-color: #4f46e5;
+            transform: translateY(-1px);
+        }
+        .action-btn:disabled {
+             background: #ccc; cursor: not-allowed; transform: none;
+        }
+        
+        #previewCardContainer {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            min-height: 200px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        .preview-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden; /* Ensures image corners are rounded if image is direct child */
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .preview-card:hover { text-decoration: none; }
+
+        #ogImagePreviewContainer {
+            width: 100%;
+            padding-top: 52.35%; /* Aspect ratio 1.91:1 for landscape images */
+            position: relative;
+            background-color: #f0f0f0; /* Placeholder background */
+            border-bottom: 1px solid #ddd;
+        }
+        #ogImagePreview {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover; /* Cover the area, might crop */
+        }
+         #ogImagePreview.no-image { /* Style when no image is available */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--text-muted-light);
+        }
+        #ogImagePreview.no-image .fas {
+            font-size: 3rem;
+        }
+
+
+        .og-card-content { padding: 1rem; }
+        #ogTitlePreview {
+            font-size: 1.1rem; font-weight: 600;
+            color: #1a1a1a; margin-bottom: 0.3rem;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        #ogDescriptionPreview {
+            font-size: 0.9rem; color: var(--text-muted-light);
+            margin-bottom: 0.5rem;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        #ogSiteNamePreview {
+            font-size: 0.8rem; color: #666; text-transform: uppercase;
+        }
+        
+        #ogErrorDisplay, .loading-placeholder, .initial-placeholder {
+            text-align: center; color: var(--text-muted-light); padding: 2rem; font-style: italic;
+        }
+        .loading-placeholder i { font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary-color); }
+        #ogErrorDisplay { color: var(--danger-color); background-color: #fee2e2; border: 1px solid #fecaca; border-radius: 8px; }
+
+        .debug-output {
+            margin-top: 1.5rem;
+            background-color: #2d2d2d; color: #f0f0f0;
+            border-radius: 8px; padding: 1rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.8rem; white-space: pre-wrap; word-break: break-all;
+            max-height: 200px; overflow-y: auto;
+        }
+        .debug-output summary { cursor: pointer; font-weight: bold; margin-bottom: 0.5rem;}
+
+
+        .cors-disclaimer {
+            font-size: 0.85rem; color: #78350f; background-color: #fefce8;
+            border: 1px solid #fde047; padding: 0.75rem 1rem;
+            border-radius: 8px; margin-top: 1.5rem; text-align: center;
+        }
+        .cors-disclaimer i { margin-right: 0.3rem; }
+
+
+        .ad-space {
+            background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 1.5rem; text-align: center; color: #64748b;
+            margin: 1.5rem 20px 0; 
+            min-height: 100px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .ad-space i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
+
+        footer {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white; padding: 1.5rem; text-align: center;
+        }
+        footer h5 { color: #e2e8f0; margin-bottom: 0.75rem; font-size: 1.1rem; }
+        footer p { color: #94a3b8; margin: 0.3rem 0; font-size: 0.9rem;}
+        .footer-icon { color: var(--primary-color); margin-right: 8px; }
+        
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .main-container { margin: 10px; border-radius: 15px; }
+            .header .tool-title { font-size: 2rem; }
+            .input-group-custom { flex-direction: column; }
+            .action-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h3 class="tool-title"><i class="fas fa-share-alt"></i> OG/Twitter 카드 미리보기</h3>
+            <p class="tool-description">URL 붙여넣기만 하면 SNS 카드 프리뷰를 즉시 렌더합니다</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="input-group-custom">
+                <input type="url" class="form-control" id="targetUrlInput" placeholder="미리보기할 URL을 입력하세요 (예: https://www.example.com)">
+                <button class="action-btn" id="fetchPreviewBtn">
+                    <i class="fas fa-eye"></i> 미리보기 생성
+                </button>
+            </div>
+            <div id="ogErrorDisplay" class="hidden"></div>
+            <div class="cors-disclaimer">
+                <i class="fas fa-shield-alt"></i> <strong>안내:</strong> 이 도구는 외부 URL의 정보를 가져오기 위해 공개 프록시를 사용합니다. 프록시 서비스 상태에 따라 작동이 불안정할 수 있으며, 실제 SNS 플랫폼의 미리보기와 다를 수 있습니다.
+            </div>
+
+
+            <div id="previewCardContainer">
+                 <div class="initial-placeholder">URL을 입력하고 "미리보기 생성" 버튼을 클릭하세요.</div>
+            </div>
+            
+            <details class="debug-output-container mt-3">
+                <summary>추출된 메타 태그 정보 보기</summary>
+                <pre id="metaTagsDebugOutput" class="debug-output">메타 태그 정보가 여기에 표시됩니다.</pre>
+            </details>
+        </div>
+
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <h5><i class="fas fa-code footer-icon"></i>개발자 정보</h5>
+            <p><i class="fas fa-user footer-icon"></i>dev. magolee</p>
+            <p><i class="fas fa-phone footer-icon"></i>tel: 010-9105-9999</p>
+            <p><i class="fas fa-donate footer-icon"></i>후원: 국민은행 - 계좌번호: xxxx</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const targetUrlInput = document.getElementById('targetUrlInput');
+        const fetchPreviewBtn = document.getElementById('fetchPreviewBtn');
+        const previewCardContainer = document.getElementById('previewCardContainer');
+        const ogErrorDisplay = document.getElementById('ogErrorDisplay');
+        const metaTagsDebugOutput = document.getElementById('metaTagsDebugOutput');
+
+        fetchPreviewBtn.addEventListener('click', fetchAndDisplayPreview);
+        targetUrlInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                fetchPreviewBtn.click();
+            }
+        });
+
+
+        function isValidURL(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === "http:" || url.protocol === "https:";
+            } catch (_) {
+                return false;  
+            }
+        }
+        
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return str === undefined || str === null ? '' : String(str);
+            return str.replace(/[&<>"']/g, match => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[match]));
+        }
+
+
+        async function fetchAndDisplayPreview() {
+            const targetUrl = targetUrlInput.value.trim();
+            ogErrorDisplay.classList.add('hidden');
+            ogErrorDisplay.textContent = '';
+            previewCardContainer.innerHTML = `<div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i><p>정보를 가져오는 중입니다...</p></div>`;
+            metaTagsDebugOutput.textContent = '메타 태그 정보 로딩 중...';
+            fetchPreviewBtn.disabled = true;
+
+            if (!targetUrl) {
+                showError("URL을 입력해주세요.");
+                resetButton();
+                return;
+            }
+            if (!isValidURL(targetUrl)) {
+                showError("유효하지 않은 URL 형식입니다. 'http://' 또는 'https://'로 시작해야 합니다.");
+                resetButton();
+                return;
+            }
+
+            // Using allorigins.win as a CORS proxy
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+            try {
+                const response = await fetch(proxyUrl);
+                if (!response.ok) {
+                    throw new Error(`프록시 서버 오류: ${response.status} ${response.statusText}`);
+                }
+                const data = await response.json();
+                
+                if (!data.contents) {
+                     throw new Error("프록시에서 HTML 내용을 가져오지 못했습니다. 해당 URL이 공개적으로 접근 가능한지 확인하세요.");
+                }
+
+                const htmlString = data.contents;
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlString, 'text/html');
+                
+                const metaData = extractMetaTags(doc, targetUrl);
+                displayPreviewCard(metaData, targetUrl);
+                displayDebugInfo(metaData);
+
+            } catch (error) {
+                console.error("Error fetching or parsing OG data:", error);
+                showError(`미리보기를 가져오는 데 실패했습니다: ${error.message}`);
+                metaTagsDebugOutput.textContent = `오류: ${error.message}`;
+            } finally {
+                resetButton();
+            }
+        }
+
+        function extractMetaTags(doc, baseUrl) {
+            const meta = {};
+            const metaTags = doc.querySelectorAll('meta');
+            
+            metaTags.forEach(tag => {
+                const property = tag.getAttribute('property');
+                const name = tag.getAttribute('name');
+                const content = tag.getAttribute('content');
+
+                if (property && content) {
+                    meta[property] = content; // e.g., meta['og:title']
+                } else if (name && content) {
+                    meta[name] = content; // e.g., meta['twitter:title']
+                }
+            });
+
+            // Fallbacks
+            meta.title = meta['twitter:title'] || meta['og:title'] || doc.querySelector('title')?.textContent || '제목 없음';
+            meta.description = meta['twitter:description'] || meta['og:description'] || meta['description'] || '설명 없음';
+            meta.image = meta['twitter:image:src'] || meta['twitter:image'] || meta['og:image:secure_url'] || meta['og:image'] || '';
+            meta.site_name = meta['og:site_name'] || '';
+            meta.url = meta['og:url'] || baseUrl; // Use og:url if available, otherwise the input URL
+
+            // Resolve relative image URL to absolute
+            if (meta.image && !isValidURL(meta.image)) {
+                try {
+                    const base = new URL(baseUrl);
+                    meta.image = new URL(meta.image, base.origin + (base.pathname.endsWith('/') ? base.pathname : base.pathname + '/../')).href;
+                } catch (e) {
+                    console.warn("Error resolving relative image URL:", e);
+                    // Keep potentially broken relative URL or clear it if resolution fails badly
+                }
+            }
+            return meta;
+        }
+
+        function displayPreviewCard(meta, originalUrl) {
+            const siteName = meta.site_name || new URL(meta.url || originalUrl).hostname.replace(/^www\./, '');
+            const displayUrl = new URL(meta.url || originalUrl).hostname;
+
+            let imageHTML = '';
+            if (meta.image && isValidURL(meta.image)) { // Only use image if it's a valid (potentially absolute) URL
+                 imageHTML = `<img id="ogImagePreview" src="${escapeHTML(meta.image)}" alt="미리보기 이미지">`;
+            } else {
+                imageHTML = `<div id="ogImagePreview" class="no-image"><i class="fas fa-image"></i></div>`; // Placeholder if no valid image
+            }
+            
+            previewCardContainer.innerHTML = `
+                <a href="${escapeHTML(meta.url || originalUrl)}" target="_blank" rel="noopener noreferrer" class="preview-card">
+                    <div id="ogImagePreviewContainer">
+                        ${imageHTML}
+                    </div>
+                    <div class="og-card-content">
+                        <div id="ogTitlePreview">${escapeHTML(meta.title)}</div>
+                        <div id="ogDescriptionPreview">${escapeHTML(meta.description)}</div>
+                        <div id="ogSiteNamePreview">${escapeHTML(siteName || displayUrl)}</div>
+                    </div>
+                </a>
+            `;
+        }
+
+        function displayDebugInfo(metaData) {
+            let debugText = "추출된 주요 메타 태그:\n";
+            debugText += `og:title: ${escapeHTML(metaData['og:title']) || 'N/A'}\n`;
+            debugText += `og:description: ${escapeHTML(metaData['og:description']) || 'N/A'}\n`;
+            debugText += `og:image: ${escapeHTML(metaData['og:image']) || 'N/A'}\n`;
+            debugText += `og:url: ${escapeHTML(metaData['og:url']) || 'N/A'}\n`;
+            debugText += `og:site_name: ${escapeHTML(metaData['og:site_name']) || 'N/A'}\n\n`;
+            debugText += `twitter:card: ${escapeHTML(metaData['twitter:card']) || 'N/A'}\n`;
+            debugText += `twitter:title: ${escapeHTML(metaData['twitter:title']) || 'N/A'}\n`;
+            debugText += `twitter:description: ${escapeHTML(metaData['twitter:description']) || 'N/A'}\n`;
+            debugText += `twitter:image: ${escapeHTML(metaData['twitter:image'] || metaData['twitter:image:src']) || 'N/A'}\n`;
+            debugText += `\n사용된 값 (우선순위 적용):\n`;
+            debugText += `Title: ${escapeHTML(metaData.title)}\n`;
+            debugText += `Description: ${escapeHTML(metaData.description)}\n`;
+            debugText += `Image: ${escapeHTML(metaData.image)}\n`;
+            debugText += `URL: ${escapeHTML(metaData.url)}\n`;
+            debugText += `Site Name: ${escapeHTML(metaData.site_name || new URL(metaData.url).hostname.replace(/^www\./, ''))}\n`;
+
+            metaTagsDebugOutput.textContent = debugText;
+        }
+        
+        function resetButton() {
+            fetchPreviewBtn.disabled = false;
+        }
+
+        function showError(message) {
+            previewCardContainer.innerHTML = `<div class="initial-placeholder">미리보기를 표시할 수 없습니다.</div>`; // Reset preview area
+            ogErrorDisplay.textContent = message;
+            ogErrorDisplay.classList.remove('hidden');
+        }
+        
+        // Set initial placeholder
+        previewCardContainer.innerHTML = `<div class="initial-placeholder">URL을 입력하고 "미리보기 생성" 버튼을 클릭하세요.</div>`;
+        metaTagsDebugOutput.textContent = '아직 조회된 정보가 없습니다.';
+
+
+    </script>
+</body>
+</html>
