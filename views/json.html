@@ -7,6 +7,26 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+        <!-- 기본 파비콘 (favicon.ico) -->
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico" />
+    
+    <!-- PNG 형식 파비콘 (현대 브라우저용) -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png" />
+    
+    <!-- Apple Touch Icon (iOS 홈 화면 추가용) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-icon-180x180.png" />
+    
+    <!-- Android / PWA 매니페스트용 아이콘 -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/img/android-icon-192x192.png" />
+    
+    <!-- Windows 타일용 메타 태그 -->
+    <meta name="msapplication-TileImage" content="/static/img/ms-icon-144x144.png" />
+    <meta name="msapplication-TileColor" content="#6366f1" />
+    
+    <!-- 테마 컬러 (모바일 브라우저 툴바 색상 지정) -->
+    <meta name="theme-color" content="#6366f1" />
+    <link href="../static/css/footer.css" rel="stylesheet">
     <style>
         :root {
             --primary-color: #10b981;
@@ -668,7 +688,123 @@
             </div>
         </div>
     </div>
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="container">
+                <div class="row">
+                    <!-- Contact 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-address-book" style="margin-right: 8px; color: var(--primary-color);"></i>
+                            Contact
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://github.com/seunghwan94" target="_blank" rel="noopener">
+                                    <i class="fab fa-github"></i> GitHub
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:seunghwan94@gmail.com">
+                                    <i class="fas fa-envelope"></i> seunghwan94@gmail.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="tel:01091050889">
+                                    <i class="fas fa-phone"></i> 010-9105-0889
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener">
+                                    <i class="fab fa-rocketchat"></i> 카카오톡 오픈채팅
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
 
+                    <!-- Projects 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-rocket" style="margin-right: 8px; color: var(--success-color);"></i>
+                            Projects
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://hof.lshwan.com/" target="_blank" rel="noopener">
+                                    <i class="fas fa-home"></i> 가구의 집
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.mplace.site" target="_blank" rel="noopener">
+                                    <i class="fas fa-store"></i> m/place 
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="return false;" style="opacity: 0.6; cursor: not-allowed;">
+                                    <i class="fas fa-tools"></i> Developer Tools Hub
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Location 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-map-marker-alt" style="margin-right: 8px; color: var(--info-color);"></i>
+                            Location
+                        </h5>
+                        <div class="location-info">
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-building"></i>
+                                서울시 양천구 신월동<br>
+                                <!-- <span style="margin-left: 24px;">대륭포스트타워 2차 203호</span> -->
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-phone-alt"></i>
+                                전화번호: 010-9105-0889
+                            </div>
+                            <div>
+                                <i class="fas fa-clock"></i>
+                                평일 09:00 - 18:00
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Follow Us 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-share-alt" style="margin-right: 8px; color: var(--warning-color);"></i>
+                            Follow Us
+                        </h5>
+                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;">
+                            <!-- 최신 도구와 업데이트 소식을 받아보세요! -->
+                        </p>
+                        <div class="social-icons">
+                            <a href="https://github.com/seunghwan94" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener" aria-label="KakaoTalk" title="카카오톡">
+                                <i class="fab fa-rocketchat"></i>
+                            </a>
+                            <a href="mailto:seunghwan94@gmail.com" aria-label="Email" title="이메일">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="tel:01091050889" aria-label="Phone" title="전화">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Bottom -->
+                <div class="footer-bottom">
+                    <p>© 2025 Mago Lee Developer Tools. 취미로 개발하는 개발자 💻</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="../static/js/footer.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
         // Example data

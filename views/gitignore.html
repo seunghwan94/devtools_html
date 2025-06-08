@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>.gitignore 생성기 - .gitignore Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <!-- 기본 파비콘 (favicon.ico) -->
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico" />
+    
+    <!-- PNG 형식 파비콘 (현대 브라우저용) -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png" />
+    
+    <!-- Apple Touch Icon (iOS 홈 화면 추가용) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-icon-180x180.png" />
+    
+    <!-- Android / PWA 매니페스트용 아이콘 -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/img/android-icon-192x192.png" />
+    
+    <!-- Windows 타일용 메타 태그 -->
+    <meta name="msapplication-TileImage" content="/static/img/ms-icon-144x144.png" />
+    <meta name="msapplication-TileColor" content="#6366f1" />
+    
+    <!-- 테마 컬러 (모바일 브라우저 툴바 색상 지정) -->
+    <meta name="theme-color" content="#6366f1" />
+    <link href="../static/css/footer.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #f59e0b;
+            --secondary-color: #d97706;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            min-height: 100vh;
+            margin: 0; padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.05) 10px,
+                rgba(255,255,255,0.05) 20px
+            );
+            animation: float 20s linear infinite;
+        }
+        .header .tool-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; z-index: 1;
+        }
+        .header .tool-description {
+            font-size: 1.1rem; opacity: 0.9; position: relative; z-index: 1; margin: 0;
+        }
+
+        .tool-section {
+            background: white; padding: 2rem;
+        }
+
+        .generator-wrapper {
+            display: grid;
+            grid-template-columns: 1fr; /* Default single column */
+            gap: 2rem;
+        }
+        @media (min-width: 992px) { /* Two columns for large screens */
+            .generator-wrapper { grid-template-columns: minmax(280px, 1fr) 2fr; }
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem; /* 6px */
+            padding: 0.6rem 0.9rem;
+            font-size: 0.95rem;
+        }
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+            outline: 0;
+        }
+        
+        .tech-list-panel {
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .tech-list-panel h5 { font-weight: 600; margin-bottom: 1rem; color: #374151; }
+        #techSearchInput { margin-bottom: 1rem; }
+        
+        #techListContainer {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem;
+            background-color: #fff;
+        }
+        .form-check {
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        .form-check:hover { background-color: #f0f2f5; }
+        .form-check-input {
+             border-color: #adb5bd;
+        }
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .form-check-label { font-size: 0.9rem; cursor: pointer; }
+
+        .action-panel { text-align: center; }
+        .action-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 50px; font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+            display: block; width: 100%; margin: 1rem 0;
+        }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(16, 185, 129, 0.3); }
+        .action-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; transform: none; }
+        
+        #gitignoreOutput {
+            width: 100%;
+            min-height: 440px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            background-color: #fdfdff;
+        }
+         #gitignoreOutput:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .output-actions {
+            display: flex; gap: 0.75rem; margin-top: 1rem;
+        }
+        .output-actions button {
+            flex: 1;
+            background-color: var(--info-color);
+            border: none; color: white; padding: 0.6rem 1rem;
+            border-radius: 8px; font-weight: 500; font-size: 0.95rem;
+            cursor: pointer; transition: background-color 0.2s ease;
+        }
+         .output-actions button:hover { background-color: #2563eb; }
+         .output-actions button:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        .ad-space {
+            background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 1.5rem; text-align: center; color: #64748b;
+            margin: 1.5rem 20px 0; 
+            min-height: 100px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .ad-space i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
+
+        
+        .hidden { display: none !important; }
+
+        @media (max-width: 991px) {
+             .generator-wrapper { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .main-container { margin: 10px; border-radius: 15px; }
+            .header .tool-title { font-size: 2rem; }
+        }
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 3;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            transform: translateX(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <a href="/" class="back-btn">
+                <i class="fas fa-arrow-left"></i> 메인으로
+            </a>
+            <h3 class="tool-title"><i class="fab fa-git-alt"></i> .gitignore 생성기</h3>
+            <p class="tool-description">언어·프레임워크 선택으로 맞춤 gitignore를 생성합니다</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="generator-wrapper">
+                <div class="tech-list-panel"> <h5>1. 기술 스택 선택:</h5>
+                    <input type="search" id="techSearchInput" class="form-control" placeholder="검색 (예: Node, Python, VSCode)...">
+                    <div id="techListContainer">
+                        <div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> 템플릿 목록 로딩 중...</div>
+                    </div>
+                     <div class="action-panel">
+                        <button id="generateBtn" class="action-btn" disabled>
+                            <i class="fas fa-cogs"></i> .gitignore 생성하기
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="output-panel"> <h5>2. 생성된 .gitignore 확인:</h5>
+                     <textarea id="gitignoreOutput" readonly placeholder="생성된 .gitignore 내용이 여기에 표시됩니다."></textarea>
+                     <div class="output-actions">
+                         <button id="copyBtn" disabled><i class="fas fa-copy"></i> 내용 복사</button>
+                         <button id="downloadBtn" disabled><i class="fas fa-download"></i> 파일로 다운로드</button>
+                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="container">
+                <div class="row">
+                    <!-- Contact 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-address-book" style="margin-right: 8px; color: var(--primary-color);"></i>
+                            Contact
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://github.com/seunghwan94" target="_blank" rel="noopener">
+                                    <i class="fab fa-github"></i> GitHub
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:seunghwan94@gmail.com">
+                                    <i class="fas fa-envelope"></i> seunghwan94@gmail.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="tel:01091050889">
+                                    <i class="fas fa-phone"></i> 010-9105-0889
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener">
+                                    <i class="fab fa-rocketchat"></i> 카카오톡 오픈채팅
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Projects 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-rocket" style="margin-right: 8px; color: var(--success-color);"></i>
+                            Projects
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://hof.lshwan.com/" target="_blank" rel="noopener">
+                                    <i class="fas fa-home"></i> 가구의 집
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.mplace.site" target="_blank" rel="noopener">
+                                    <i class="fas fa-store"></i> m/place 
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="return false;" style="opacity: 0.6; cursor: not-allowed;">
+                                    <i class="fas fa-tools"></i> Developer Tools Hub
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Location 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-map-marker-alt" style="margin-right: 8px; color: var(--info-color);"></i>
+                            Location
+                        </h5>
+                        <div class="location-info">
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-building"></i>
+                                서울시 양천구 신월동<br>
+                                <!-- <span style="margin-left: 24px;">대륭포스트타워 2차 203호</span> -->
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-phone-alt"></i>
+                                전화번호: 010-9105-0889
+                            </div>
+                            <div>
+                                <i class="fas fa-clock"></i>
+                                평일 09:00 - 18:00
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Follow Us 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-share-alt" style="margin-right: 8px; color: var(--warning-color);"></i>
+                            Follow Us
+                        </h5>
+                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;">
+                            <!-- 최신 도구와 업데이트 소식을 받아보세요! -->
+                        </p>
+                        <div class="social-icons">
+                            <a href="https://github.com/seunghwan94" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener" aria-label="KakaoTalk" title="카카오톡">
+                                <i class="fab fa-rocketchat"></i>
+                            </a>
+                            <a href="mailto:seunghwan94@gmail.com" aria-label="Email" title="이메일">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="tel:01091050889" aria-label="Phone" title="전화">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Bottom -->
+                <div class="footer-bottom">
+                    <p>© 2025 Mago Lee Developer Tools. 취미로 개발하는 개발자 💻</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="../static/js/footer.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const techSearchInput = document.getElementById('techSearchInput');
+        const techListContainer = document.getElementById('techListContainer');
+        const generateBtn = document.getElementById('generateBtn');
+        const gitignoreOutput = document.getElementById('gitignoreOutput');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        const GITHUB_API_URL = 'https://api.github.com/repos/github/gitignore/contents/';
+
+        async function fetchTemplateList() {
+            try {
+                const response = await fetch(GITHUB_API_URL);
+                if (!response.ok) {
+                    throw new Error(`GitHub API 요청 실패: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                const templates = data
+                    .filter(item => item.name.endsWith('.gitignore'))
+                    .map(item => ({
+                        name: item.name.replace('.gitignore', ''),
+                        path: item.path,
+                        url: item.download_url
+                    }))
+                    .sort((a, b) => a.name.localeCompare(b.name));
+
+                populateTechList(templates);
+                generateBtn.disabled = false;
+
+            } catch (error) {
+                console.error("Error fetching template list:", error);
+                techListContainer.innerHTML = `<div class="text-center p-3 text-danger">템플릿 목록을 불러오는 데 실패했습니다.</div>`;
+            }
+        }
+
+        function populateTechList(templates) {
+            techListContainer.innerHTML = '';
+            templates.forEach(template => {
+                const div = document.createElement('div');
+                div.className = 'form-check';
+                div.innerHTML = `
+                    <input class="form-check-input" type="checkbox" value="${template.url}" id="tech-${template.name}">
+                    <label class="form-check-label" for="tech-${template.name}">
+                        ${template.name}
+                    </label>
+                `;
+                techListContainer.appendChild(div);
+            });
+        }
+        
+        techSearchInput.addEventListener('input', () => {
+            const searchTerm = techSearchInput.value.toLowerCase();
+            const labels = techListContainer.querySelectorAll('.form-check-label');
+            labels.forEach(label => {
+                const itemText = label.textContent.trim().toLowerCase();
+                const parentDiv = label.closest('.form-check');
+                if (itemText.includes(searchTerm)) {
+                    parentDiv.style.display = 'block';
+                } else {
+                    parentDiv.style.display = 'none';
+                }
+            });
+        });
+
+        async function generateGitignore() {
+            const selectedCheckboxes = techListContainer.querySelectorAll('input[type="checkbox"]:checked');
+            if (selectedCheckboxes.length === 0) {
+                alert("하나 이상의 기술 스택을 선택해주세요.");
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 생성 중...';
+            gitignoreOutput.value = '선택한 템플릿을 가져오는 중입니다...';
+
+            const fetchPromises = Array.from(selectedCheckboxes).map(checkbox => {
+                const url = checkbox.value;
+                const name = checkbox.nextElementSibling.textContent.trim();
+                return fetch(url)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`${name} 템플릿을 가져오지 못했습니다.`);
+                        return response.text();
+                    })
+                    .then(text => `\n### ${name} ###\n${text}`);
+            });
+
+            try {
+                const results = await Promise.all(fetchPromises);
+                gitignoreOutput.value = results.join('\n');
+                copyBtn.disabled = false;
+                downloadBtn.disabled = false;
+            } catch (error) {
+                console.error("Error generating .gitignore:", error);
+                gitignoreOutput.value = `오류가 발생했습니다: ${error.message}`;
+                copyBtn.disabled = true;
+                downloadBtn.disabled = true;
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fas fa-cogs"></i> .gitignore 생성하기';
+            }
+        }
+        generateBtn.addEventListener('click', generateGitignore);
+
+
+        copyBtn.addEventListener('click', () => {
+             if (!gitignoreOutput.value) return;
+             navigator.clipboard.writeText(gitignoreOutput.value).then(() => {
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> 복사 완료!';
+                setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> 내용 복사'; }, 1500);
+             }).catch(err => {
+                 alert("클립보드 복사에 실패했습니다.");
+                 console.error('Copy failed', err);
+             });
+        });
+
+        downloadBtn.addEventListener('click', () => {
+             if (!gitignoreOutput.value) return;
+             const blob = new Blob([gitignoreOutput.value], { type: 'text/plain' });
+             const link = document.createElement('a');
+             link.href = URL.createObjectURL(blob);
+             link.download = '.gitignore';
+             document.body.appendChild(link);
+             link.click();
+             document.body.removeChild(link);
+             URL.revokeObjectURL(link.href);
+        });
+
+        // Initial fetch
+        document.addEventListener('DOMContentLoaded', fetchTemplateList);
+    </script>
+</body>
+</html>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>픽셀 아바타 생성기 - Pixel Avatar (Identicon) Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <!-- 기본 파비콘 (favicon.ico) -->
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico" />
+    
+    <!-- PNG 형식 파비콘 (현대 브라우저용) -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png" />
+    
+    <!-- Apple Touch Icon (iOS 홈 화면 추가용) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-icon-180x180.png" />
+    
+    <!-- Android / PWA 매니페스트용 아이콘 -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/img/android-icon-192x192.png" />
+    
+    <!-- Windows 타일용 메타 태그 -->
+    <meta name="msapplication-TileImage" content="/static/img/ms-icon-144x144.png" />
+    <meta name="msapplication-TileColor" content="#6366f1" />
+    
+    <!-- 테마 컬러 (모바일 브라우저 툴바 색상 지정) -->
+    <meta name="theme-color" content="#6366f1" />
+    <link href="../static/css/footer.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #374151;
+            --secondary-color: #1f2937;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+            min-height: 100vh;
+            margin: 0; padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.05) 10px,
+                rgba(255,255,255,0.05) 20px
+            );
+            animation: float 20s linear infinite;
+        }
+        .header .tool-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; z-index: 1;
+        }
+        .header .tool-description {
+            font-size: 1.1rem; opacity: 0.9; position: relative; z-index: 1; margin: 0;
+        }
+
+        .tool-section {
+            background: white; padding: 2rem;
+        }
+        
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr; /* Default single column */
+            gap: 2rem;
+        }
+        @media (min-width: 992px) { /* Two columns for large screens */
+            .content-wrapper { grid-template-columns: 2fr 1fr; } 
+        }
+
+        .identicon-display-area {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 1rem;
+        }
+        #identiconCanvas {
+            border: 1px solid var(--border-color);
+            background-color: var(--light-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            image-rendering: pixelated; /* Ensures crisp pixels on zoom */
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .options-panel {
+            background-color: var(--light-bg);
+            padding: 1.5rem; border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .options-panel h5 { font-weight: 600; margin-bottom: 1rem; color: #374151;}
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label {
+            display: block; font-weight: 500; margin-bottom: 0.5rem; color: #374151; font-size: 0.9rem;
+        }
+        .form-control, .form-range {
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 0.9rem;
+        }
+        input[type="range"] { padding: 0; }
+        .form-control:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #374151, #1f2937);
+            border: none; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 50px; font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.2);
+            display: block; width: 100%; margin-top: 1.5rem;
+        }
+        .download-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(16, 185, 129, 0.3); }
+
+        .ad-space {
+            background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 1.5rem; text-align: center; color: #64748b;
+            margin: 1.5rem 20px 0; 
+            min-height: 100px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .ad-space i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
+
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 3;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            transform: translateX(-5px);
+        }
+        @media (max-width: 991px) {
+            .content-wrapper { grid-template-columns: 1fr; }
+            .identicon-display-area { order: -1; }
+        }
+        @media (max-width: 768px) {
+            .main-container { margin: 10px; border-radius: 15px; }
+            .header .tool-title { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <a href="/" class="back-btn">
+                <i class="fas fa-arrow-left"></i> 메인으로
+            </a>          
+            <h3 class="tool-title"><i class="fas fa-id-badge"></i> 픽셀 아바타</h3>
+            <p class="tool-description">문자열 해시로 유니크한 8-비트 아바타를 만듭니다</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="content-wrapper">
+                 <div class="identicon-display-area"> <canvas id="identiconCanvas" width="250" height="250"></canvas>
+                </div>
+
+                <div class="options-panel"> <h5><i class="fas fa-cogs"></i> 생성 옵션</h5>
+                     <div class="form-group">
+                        <label for="stringInput">문자열 입력:</label>
+                        <input type="text" id="stringInput" class="form-control" placeholder="아이디, 이메일, 닉네임 등" value="identicon">
+                    </div>
+                     <div class="form-group">
+                        <label for="avatarSizeSlider">아바타 크기: <span id="avatarSizeValue">250</span>px</label>
+                        <input type="range" class="form-range" id="avatarSizeSlider" min="50" max="500" step="10" value="250">
+                    </div>
+                     <div class="form-group">
+                        <label for="pixelPaddingSlider">픽셀 간격: <span id="pixelPaddingValue">0.1</span></label>
+                        <input type="range" class="form-range" id="pixelPaddingSlider" min="0" max="0.5" step="0.05" value="0.1">
+                    </div>
+                     <div class="download-btn-container">
+                        <button id="downloadBtn" class="download-btn"><i class="fas fa-download"></i> 아바타 다운로드</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="container">
+                <div class="row">
+                    <!-- Contact 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-address-book" style="margin-right: 8px; color: var(--primary-color);"></i>
+                            Contact
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://github.com/seunghwan94" target="_blank" rel="noopener">
+                                    <i class="fab fa-github"></i> GitHub
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:seunghwan94@gmail.com">
+                                    <i class="fas fa-envelope"></i> seunghwan94@gmail.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="tel:01091050889">
+                                    <i class="fas fa-phone"></i> 010-9105-0889
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener">
+                                    <i class="fab fa-rocketchat"></i> 카카오톡 오픈채팅
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Projects 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-rocket" style="margin-right: 8px; color: var(--success-color);"></i>
+                            Projects
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://hof.lshwan.com/" target="_blank" rel="noopener">
+                                    <i class="fas fa-home"></i> 가구의 집
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.mplace.site" target="_blank" rel="noopener">
+                                    <i class="fas fa-store"></i> m/place 
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="return false;" style="opacity: 0.6; cursor: not-allowed;">
+                                    <i class="fas fa-tools"></i> Developer Tools Hub
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Location 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-map-marker-alt" style="margin-right: 8px; color: var(--info-color);"></i>
+                            Location
+                        </h5>
+                        <div class="location-info">
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-building"></i>
+                                서울시 양천구 신월동<br>
+                                <!-- <span style="margin-left: 24px;">대륭포스트타워 2차 203호</span> -->
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-phone-alt"></i>
+                                전화번호: 010-9105-0889
+                            </div>
+                            <div>
+                                <i class="fas fa-clock"></i>
+                                평일 09:00 - 18:00
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Follow Us 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-share-alt" style="margin-right: 8px; color: var(--warning-color);"></i>
+                            Follow Us
+                        </h5>
+                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;">
+                            <!-- 최신 도구와 업데이트 소식을 받아보세요! -->
+                        </p>
+                        <div class="social-icons">
+                            <a href="https://github.com/seunghwan94" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener" aria-label="KakaoTalk" title="카카오톡">
+                                <i class="fab fa-rocketchat"></i>
+                            </a>
+                            <a href="mailto:seunghwan94@gmail.com" aria-label="Email" title="이메일">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="tel:01091050889" aria-label="Phone" title="전화">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Bottom -->
+                <div class="footer-bottom">
+                    <p>© 2025 Mago Lee Developer Tools. 취미로 개발하는 개발자 💻</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="../static/js/footer.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const stringInput = document.getElementById('stringInput');
+        const avatarSizeSlider = document.getElementById('avatarSizeSlider');
+        const avatarSizeValue = document.getElementById('avatarSizeValue');
+        const pixelPaddingSlider = document.getElementById('pixelPaddingSlider');
+        const pixelPaddingValue = document.getElementById('pixelPaddingValue');
+        const identiconCanvas = document.getElementById('identiconCanvas');
+        const downloadBtn = document.getElementById('downloadBtn');
+        let debounceTimeout;
+
+        // --- Event Listeners ---
+        [stringInput, avatarSizeSlider, pixelPaddingSlider].forEach(input => {
+            input.addEventListener('input', () => {
+                // Update value displays immediately
+                if(input.id === 'avatarSizeSlider') avatarSizeValue.textContent = input.value;
+                if(input.id === 'pixelPaddingSlider') pixelPaddingValue.textContent = input.value;
+                
+                // Debounce the actual generation
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(generateIdenticon, 150);
+            });
+        });
+        downloadBtn.addEventListener('click', downloadIdenticon);
+
+        
+        /**
+         * A simple string hashing function (non-cryptographic).
+         * @param {string} str The string to hash.
+         * @returns {number} A 32-bit integer hash.
+         */
+        function simpleHash(str) {
+            let hash = 0;
+            if (str.length === 0) return hash;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash |= 0; // Convert to 32bit integer
+            }
+            return hash;
+        }
+
+        function generateIdenticon() {
+            const str = stringInput.value;
+            const size = parseInt(avatarSizeSlider.value);
+            const paddingRatio = parseFloat(pixelPaddingSlider.value);
+            const gridSize = 5;
+
+            const hash = simpleHash(str);
+            const absoluteHash = Math.abs(hash);
+
+            // 1. Determine Color from Hash
+            const hue = absoluteHash % 360;
+            const saturation = 60 + (absoluteHash % 21); // 60-80%
+            const lightness = 45 + (absoluteHash % 21); // 45-65%
+            const color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+
+            // 2. Determine Pattern from Hash
+            const grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
+            
+            // We need 15 bits for a 5x3 half-grid (center column + 2 others)
+            for (let i = 0; i < 15; i++) {
+                if ((absoluteHash >> i) & 1) {
+                    const row = i % gridSize;
+                    const col = Math.floor(i / gridSize);
+                    grid[row][col] = true;
+                }
+            }
+            
+            // Mirror the pattern
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < Math.floor(gridSize / 2); col++) {
+                    grid[row][gridSize - 1 - col] = grid[row][col];
+                }
+            }
+
+            // 3. Draw on Canvas
+            const ctx = identiconCanvas.getContext('2d');
+            identiconCanvas.width = size;
+            identiconCanvas.height = size;
+
+            const totalPadding = size * paddingRatio;
+            const pixelSize = (size - totalPadding) / gridSize;
+            const paddingPerPixel = totalPadding / (gridSize + 1);
+
+            ctx.clearRect(0, 0, size, size);
+            ctx.fillStyle = color;
+
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    if (grid[row][col]) {
+                        const x = paddingPerPixel * (col + 1) + pixelSize * col;
+                        const y = paddingPerPixel * (row + 1) + pixelSize * row;
+                        ctx.fillRect(x, y, pixelSize, pixelSize);
+                    }
+                }
+            }
+        }
+        
+        function downloadIdenticon() {
+            const filename = `identicon_${stringInput.value.trim().replace(/\s+/g, '_') || 'default'}.png`;
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = identiconCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Initial generation
+        document.addEventListener('DOMContentLoaded', generateIdenticon);
+    </script>
+</body>
+</html>

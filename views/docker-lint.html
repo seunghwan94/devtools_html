@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dockerfile Linter</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <!-- 기본 파비콘 (favicon.ico) -->
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico" />
+    
+    <!-- PNG 형식 파비콘 (현대 브라우저용) -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png" />
+    
+    <!-- Apple Touch Icon (iOS 홈 화면 추가용) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-icon-180x180.png" />
+    
+    <!-- Android / PWA 매니페스트용 아이콘 -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/img/android-icon-192x192.png" />
+    
+    <!-- Windows 타일용 메타 태그 -->
+    <meta name="msapplication-TileImage" content="/static/img/ms-icon-144x144.png" />
+    <meta name="msapplication-TileColor" content="#6366f1" />
+    
+    <!-- 테마 컬러 (모바일 브라우저 툴바 색상 지정) -->
+    <meta name="theme-color" content="#6366f1" />
+    <link href="../static/css/footer.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ef4444;
+            --secondary-color: #dc2626;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            min-height: 100vh;
+            margin: 0; padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.05) 10px,
+                rgba(255,255,255,0.05) 20px
+            );
+            animation: float 20s linear infinite;
+        }
+        .header .tool-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; z-index: 1;
+        }
+        .header .tool-description {
+            font-size: 1.1rem; opacity: 0.9; position: relative; z-index: 1; margin: 0;
+        }
+
+        .tool-section {
+            background: white; padding: 2rem;
+        }
+
+        .linter-wrapper {
+            display: grid;
+            grid-template-columns: 1fr; /* Default single column */
+            gap: 2rem;
+        }
+        @media (min-width: 992px) { /* Two columns for large screens */
+            .linter-wrapper { grid-template-columns: 1fr 1fr; }
+        }
+        
+        #dockerfileInput {
+            min-height: 400px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            background-color: #fdfdff;
+        }
+         #dockerfileInput:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .results-panel {
+            background-color: var(--light-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            min-height: 400px;
+        }
+        .results-panel h5 { font-weight: 600; color: #374151; margin-bottom: 1rem; }
+        
+        #lintResultsContainer .placeholder {
+            text-align: center; color: #6b7280; padding: 3rem 1rem; font-style: italic;
+        }
+        #lintResultsContainer .placeholder i { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+        
+        .lint-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.85rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-left-width: 5px;
+            background-color: #fff;
+        }
+        .lint-item.level-info { border-left-color: var(--info-color); }
+        .lint-item.level-warning { border-left-color: var(--warning-color); }
+        .lint-item.level-error { border-left-color: var(--danger-color); }
+
+        .lint-item .lint-icon {
+            font-size: 1.2rem;
+            margin-top: 0.1rem;
+        }
+        .lint-item.level-info .lint-icon { color: var(--info-color); }
+        .lint-item.level-warning .lint-icon { color: var(--warning-color); }
+        .lint-item.level-error .lint-icon { color: var(--danger-color); }
+
+        .lint-content { flex: 1; }
+        .lint-message { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.2rem; }
+        .lint-details { font-size: 0.85rem; color: #6b7280; }
+        .lint-details code {
+            font-size: 0.8rem; background-color: #eef2ff; color: var(--primary-color);
+            padding: 2px 4px; border-radius: 4px;
+        }
+
+        .ad-space {
+            background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 1.5rem; text-align: center; color: #64748b;
+            margin: 1.5rem 20px 0; 
+            min-height: 100px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .ad-space i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
+        @media (max-width: 991px) {
+             .linter-wrapper { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .main-container { margin: 10px; border-radius: 15px; }
+            .header .tool-title { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h3 class="tool-title"><i class="fab fa-docker"></i> Dockerfile Linter</h3>
+            <p class="tool-description">붙여넣기만 하면 베스트 프랙티스를 자동 분석합니다</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="linter-wrapper">
+                <div>
+                    <h5>Dockerfile 내용:</h5>
+                    <textarea id="dockerfileInput" class="form-control" rows="15" placeholder="여기에 Dockerfile 내용을 붙여넣으세요..."></textarea>
+                </div>
+                <div class="results-panel">
+                    <h5><i class="fas fa-search-plus"></i> 분석 결과</h5>
+                    <div id="lintResultsContainer">
+                        <div class="placeholder">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>왼쪽 창에 Dockerfile 내용을 입력하면 분석 결과가 여기에 표시됩니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="container">
+                <div class="row">
+                    <!-- Contact 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-address-book" style="margin-right: 8px; color: var(--primary-color);"></i>
+                            Contact
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://github.com/seunghwan94" target="_blank" rel="noopener">
+                                    <i class="fab fa-github"></i> GitHub
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:seunghwan94@gmail.com">
+                                    <i class="fas fa-envelope"></i> seunghwan94@gmail.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="tel:01091050889">
+                                    <i class="fas fa-phone"></i> 010-9105-0889
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener">
+                                    <i class="fab fa-rocketchat"></i> 카카오톡 오픈채팅
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Projects 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-rocket" style="margin-right: 8px; color: var(--success-color);"></i>
+                            Projects
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://hof.lshwan.com/" target="_blank" rel="noopener">
+                                    <i class="fas fa-home"></i> 가구의 집
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.mplace.site" target="_blank" rel="noopener">
+                                    <i class="fas fa-store"></i> m/place 
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="return false;" style="opacity: 0.6; cursor: not-allowed;">
+                                    <i class="fas fa-tools"></i> Developer Tools Hub
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Location 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-map-marker-alt" style="margin-right: 8px; color: var(--info-color);"></i>
+                            Location
+                        </h5>
+                        <div class="location-info">
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-building"></i>
+                                서울시 양천구 신월동<br>
+                                <!-- <span style="margin-left: 24px;">대륭포스트타워 2차 203호</span> -->
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-phone-alt"></i>
+                                전화번호: 010-9105-0889
+                            </div>
+                            <div>
+                                <i class="fas fa-clock"></i>
+                                평일 09:00 - 18:00
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Follow Us 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-share-alt" style="margin-right: 8px; color: var(--warning-color);"></i>
+                            Follow Us
+                        </h5>
+                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;">
+                            <!-- 최신 도구와 업데이트 소식을 받아보세요! -->
+                        </p>
+                        <div class="social-icons">
+                            <a href="https://github.com/seunghwan94" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener" aria-label="KakaoTalk" title="카카오톡">
+                                <i class="fab fa-rocketchat"></i>
+                            </a>
+                            <a href="mailto:seunghwan94@gmail.com" aria-label="Email" title="이메일">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="tel:01091050889" aria-label="Phone" title="전화">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Bottom -->
+                <div class="footer-bottom">
+                    <p>© 2025 Mago Lee Developer Tools. 취미로 개발하는 개발자 💻</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="../static/js/footer.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const dockerfileInput = document.getElementById('dockerfileInput');
+        const lintResultsContainer = document.getElementById('lintResultsContainer');
+        let debounceTimeout;
+
+        // --- Linter Rules ---
+        const LINTER_RULES = [
+            {
+                id: 'DL1001',
+                level: 'Info',
+                message: '`COPY`는 파일 시스템의 명시적인 소스만 복사하므로 `ADD`보다 권장됩니다.',
+                check: (line) => line.trim().toUpperCase().startsWith('ADD ')
+            },
+            {
+                id: 'DL1002',
+                level: 'Warning',
+                message: '보안을 위해 root가 아닌 사용자로 컨테이너를 실행하세요.',
+                check: (lines) => !lines.some(line => line.trim().toUpperCase().startsWith('USER '))
+            },
+            {
+                id: 'DL1003',
+                level: 'Warning',
+                message: '베이스 이미지에 `:latest` 태그 사용은 예측 불가능한 빌드를 유발할 수 있습니다. 특정 버전을 명시하세요.',
+                check: (line) => line.trim().toUpperCase().startsWith('FROM ') && line.includes(':latest')
+            },
+             {
+                id: 'DL1004',
+                level: 'Info',
+                message: '패키지 설치 시 `--no-install-recommends`를 사용하면 이미지 크기를 줄일 수 있습니다.',
+                check: (line) => line.includes('apt-get install') && !line.includes('--no-install-recommends')
+            },
+            {
+                id: 'DL1005',
+                level: 'Info',
+                message: '`apt-get` 사용 후 캐시를 정리하면 이미지 레이어 크기를 줄일 수 있습니다. `rm -rf /var/lib/apt/lists/*`를 같은 `RUN` 레이어에 추가하세요.',
+                check: (line) => line.includes('apt-get install') && !line.includes('rm -rf /var/lib/apt/lists/*')
+            },
+             {
+                id: 'DL1006',
+                level: 'Info',
+                message: '`RUN` 명령어를 `&&`로 연결하여 레이어 수를 줄이세요.',
+                check: (lines) => {
+                    let runCount = 0;
+                    let lastRunIndex = -1;
+                    lines.forEach((line, index) => {
+                        if (line.trim().toUpperCase().startsWith('RUN ')) {
+                           if (lastRunIndex === index - 1) { // Consecutive RUNs
+                               runCount++;
+                           }
+                           lastRunIndex = index;
+                        }
+                    });
+                    return runCount > 0;
+                }
+            },
+            {
+                id: 'DL1007',
+                level: 'Info',
+                message: '명시적인 `WORKDIR`을 설정하면 `cd`를 반복적으로 사용할 필요가 없습니다.',
+                check: (lines) => !lines.some(line => line.trim().toUpperCase().startsWith('WORKDIR '))
+            },
+             {
+                id: 'DL1008',
+                level: 'Warning',
+                message: '`ENV`나 `ARG`에 `PASSWORD`, `SECRET`, `KEY`와 같은 민감한 정보가 포함된 것 같습니다.',
+                check: (line) => {
+                    const upperLine = line.trim().toUpperCase();
+                    if (upperLine.startsWith('ENV ') || upperLine.startsWith('ARG ')) {
+                        return /(PASSWORD|SECRET|KEY|TOKEN)/.test(upperLine);
+                    }
+                    return false;
+                }
+            },
+            {
+                id: 'DL1009',
+                level: 'Info',
+                message: '`EXPOSE` 명령어를 사용하여 컨테이너가 수신 대기하는 포트를 명시적으로 문서화하세요.',
+                check: (lines) => !lines.some(line => line.trim().toUpperCase().startsWith('EXPOSE '))
+            },
+        ];
+
+        function lintDockerfile() {
+            const content = dockerfileInput.value;
+            const lines = content.split('\n');
+            let results = [];
+            
+            // Checks applied to each line
+            lines.forEach((line, index) => {
+                const lineNumber = index + 1;
+                LINTER_RULES.forEach(rule => {
+                    if (rule.check.length === 1 && rule.check(line)) {
+                        results.push({ ...rule, line: lineNumber });
+                    }
+                });
+            });
+            
+            // Checks applied to all lines
+            LINTER_RULES.forEach(rule => {
+                 if (rule.check.length > 1 && rule.check(lines)) {
+                    // For whole-file checks, we don't have a specific line number,
+                    // or we can try to find the relevant line. For simplicity, showing line 0.
+                    const existing = results.find(r => r.id === rule.id);
+                    if (!existing) { // Avoid duplicates
+                        results.push({ ...rule, line: 0 });
+                    }
+                 }
+            });
+
+            // Remove duplicate results by ID
+            results = results.filter((result, index, self) => 
+                index === self.findIndex((r) => r.id === result.id)
+            );
+
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            lintResultsContainer.innerHTML = ''; // Clear previous results
+
+            if (dockerfileInput.value.trim() === '') {
+                 lintResultsContainer.innerHTML = `<div class="placeholder"><i class="fas fa-clipboard-list"></i><p>왼쪽 창에 Dockerfile 내용을 입력하면 분석 결과가 여기에 표시됩니다.</p></div>`;
+                 return;
+            }
+
+            if (results.length === 0) {
+                lintResultsContainer.innerHTML = `<div class="placeholder"><i class="fas fa-check-circle text-success"></i><p>좋습니다! 특별한 문제점을 찾지 못했습니다.</p></div>`;
+                return;
+            }
+            
+            results.sort((a,b) => a.line - b.line).forEach(result => {
+                const item = document.createElement('div');
+                item.className = `lint-item level-${result.level.toLowerCase()}`;
+                
+                const iconMap = {
+                    Info: 'fa-info-circle',
+                    Warning: 'fa-exclamation-triangle',
+                    Error: 'fa-times-circle'
+                };
+                
+                item.innerHTML = `
+                    <div class="lint-icon"><i class="fas ${iconMap[result.level]}"></i></div>
+                    <div class="lint-content">
+                        <div class="lint-message">${result.message}</div>
+                        <div class="lint-details">
+                            <code>${result.id}</code>
+                            ${result.line > 0 ? `<span>· 라인: ${result.line}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+                lintResultsContainer.appendChild(item);
+            });
+        }
+        
+        dockerfileInput.addEventListener('input', () => {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(lintDockerfile, 500); // Debounce for 500ms
+        });
+        
+        // Initial call for placeholder
+        displayResults([]);
+    </script>
+</body>
+</html>

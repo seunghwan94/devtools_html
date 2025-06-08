@@ -4,8 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>개발자 필수 도구 모음 - Developer Tools Hub</title>
+    <!-- 기본 파비콘 (favicon.ico) -->
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico" />
+    
+    <!-- PNG 형식 파비콘 (현대 브라우저용) -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png" />
+    
+    <!-- Apple Touch Icon (iOS 홈 화면 추가용) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-icon-180x180.png" />
+    
+    <!-- Android / PWA 매니페스트용 아이콘 -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/img/android-icon-192x192.png" />
+    
+    <!-- Windows 타일용 메타 태그 -->
+    <meta name="msapplication-TileImage" content="/static/img/ms-icon-144x144.png" />
+    <meta name="msapplication-TileColor" content="#6366f1" />
+    
+    <!-- 테마 컬러 (모바일 브라우저 툴바 색상 지정) -->
+    <meta name="theme-color" content="#6366f1" />
+    <link href="../static/css/footer.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <style>
         :root {
             --primary-color: #6366f1;
@@ -326,45 +347,6 @@
             margin-top: 0.5rem;
         }
 
-        footer {
-            background: linear-gradient(135deg, #1e293b, #334155);
-            color: white;
-            padding: 3rem 2rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        footer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--success-color));
-        }
-
-        footer h5 {
-            color: #e2e8f0;
-            margin-bottom: 1.5rem;
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-
-        footer p {
-            color: #94a3b8;
-            margin: 0.8rem 0;
-            font-size: 1rem;
-        }
-
-        .footer-icon {
-            color: var(--primary-color);
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-
         @media (max-width: 768px) {
             .main-container {
                 margin: 10px;
@@ -440,197 +422,39 @@
     <div class="main-container">
         <!-- Header -->
         <div class="header">
-            <h1><i class="fas fa-tools"></i> 개발자 필수 도구 모음</h1>
-            <p>생산성을 높이는 강력한 온라인 개발 도구들을 한 곳에서</p>
+            <h1><i class="fas fa-tools"></i> Mago Lee - 25.6.6</h1>
+            <p>쓸만한 것들 모은 기능</p>
         </div>
 
         <!-- Tools Section -->
         <div class="tools-section">
             <div class="section-title">
-                <h2>🚀 도구 모음</h2>
-                <p>개발 작업을 더 빠르고 효율적으로 만들어주는 필수 도구들</p>
+                <img src="../static/img/qrcode.png" alt="QR Code" style="width: 60px; height: 60px; vertical-align: middle; margin-right: 8px;">
+                <h2>그냥 만든 사이트</h2>
+                <p>추가로 필요한 기능있으면 연락 주세요.</p>
             </div>
 
             <div class="tools-grid">
-                <!-- Code Compare Tool -->
-                <a href="/compare" class="tool-card tool-primary">
+                <!-- QR Code Generator -->
+                <a href="/qrcode" class="tool-card tool-primary">
                     <div class="tool-card-content">
                         <div class="tool-icon tool-primary">
-                            <i class="fas fa-code-branch"></i>
+                            <i class="fas fa-qrcode"></i>
                         </div>
-                        <h3 class="tool-title">코드/텍스트 비교 도구</h3>
-                        <p class="tool-description">두 텍스트나 코드를 라인별로 비교하여 차이점을 시각적으로 확인할 수 있습니다</p>
+                        <h3 class="tool-title">QR 코드 생성기</h3>
+                        <p class="tool-description">텍스트나 URL,tel,email 등을 QR 코드로 변환하여 다운로드할 수 있습니다</p>
                     </div>
                 </a>
-
                 <!-- JSON Formatter -->
                 <a href="/json" class="tool-card tool-success">
                     <div class="tool-card-content">
                         <div class="tool-icon tool-success">
-                            <i class="fas fa-brackets-curly"></i>
+                            <i class="fas fa-code"></i>
                         </div>
                         <h3 class="tool-title">JSON 포매터 & 검증</h3>
                         <p class="tool-description">JSON 데이터를 예쁘게 포맷하고 유효성을 검증하여 오류를 찾을 수 있습니다</p>
                     </div>
                 </a>
-
-                <!-- Markdown Preview -->
-                <a href="/markdown" class="tool-card tool-dark">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-dark">
-                            <i class="fab fa-markdown"></i>
-                        </div>
-                        <h3 class="tool-title">Markdown 미리보기</h3>
-                        <p class="tool-description">마크다운 문법을 실시간으로 미리보기하며 문서를 작성할 수 있습니다</p>
-                    </div>
-                </a>
-
-                <!-- Base64 Encoder -->
-                <a href="/base64" class="tool-card tool-info">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-info">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <h3 class="tool-title">Base64 인코딩/디코딩</h3>
-                        <p class="tool-description">텍스트나 파일을 Base64로 인코딩하거나 디코딩할 수 있습니다</p>
-                    </div>
-                </a>
-
-                <!-- Image Resize -->
-                <a href="/image-resize" class="tool-card tool-warning">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-warning">
-                            <i class="fas fa-image"></i>
-                        </div>
-                        <h3 class="tool-title">이미지 압축 & 크기 조정</h3>
-                        <p class="tool-description">이미지 파일의 크기를 조정하고 압축하여 웹에 최적화할 수 있습니다</p>
-                    </div>
-                </a>
-
-                <!-- Password Generator -->
-                <a href="/password" class="tool-card tool-danger">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-danger">
-                            <i class="fas fa-key"></i>
-                        </div>
-                        <h3 class="tool-title">랜덤 패스워드 생성</h3>
-                        <p class="tool-description">보안이 강화된 랜덤 패스워드를 다양한 옵션으로 생성할 수 있습니다</p>
-                    </div>
-                </a>
-
-                <!-- URL Shortener -->
-                <a href="/shorturl" class="tool-card tool-secondary">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-secondary">
-                            <i class="fas fa-link"></i>
-                        </div>
-                        <h3 class="tool-title">URL 단축기</h3>
-                        <p class="tool-description">긴 URL을 짧고 기억하기 쉬운 링크로 변환할 수 있습니다</p>
-                    </div>
-                </a>
-
-                <!-- Regex Tester -->
-                <a href="/regex" class="tool-card tool-dark">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-dark">
-                            <i class="fas fa-search"></i>
-                        </div>
-                        <h3 class="tool-title">Regex 테스터</h3>
-                        <p class="tool-description">정규표현식을 테스트하고 매칭 결과를 실시간으로 확인할 수 있습니다</p>
-                    </div>
-                </a>
-
-                <!-- IP Info -->
-                <a href="/ipinfo" class="tool-card tool-primary">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-primary">
-                            <i class="fas fa-globe"></i>
-                        </div>
-                        <h3 class="tool-title">IP 주소 정보 확인</h3>
-                        <p class="tool-description">IP 주소의 위치, ISP, 도메인 등 상세 정보를 조회할 수 있습니다</p>
-                    </div>
-                </a>
-
-                <!-- Online Notepad -->
-                <a href="/notepad" class="tool-card tool-success">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-success">
-                            <i class="fas fa-sticky-note"></i>
-                        </div>
-                        <h3 class="tool-title">온라인 메모장</h3>
-                        <p class="tool-description">언제 어디서나 접근 가능한 클라우드 기반 메모장입니다</p>
-                    </div>
-                </a>
-
-                <!-- File Converter -->
-                <a href="/fileconvert" class="tool-card tool-info coming-soon">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-info">
-                            <i class="fas fa-exchange-alt"></i>
-                        </div>
-                        <h3 class="tool-title">파일 타입 변환기</h3>
-                        <p class="tool-description">다양한 파일 형식 간 변환을 지원하는 올인원 컨버터입니다</p>
-                    </div>
-                </a>
-
-                <!-- QR Code Generator -->
-                <a href="/qrcode" class="tool-card tool-warning coming-soon">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-warning">
-                            <i class="fas fa-qrcode"></i>
-                        </div>
-                        <h3 class="tool-title">QR 코드 생성기</h3>
-                        <p class="tool-description">텍스트나 URL을 QR 코드로 변환하여 다운로드할 수 있습니다</p>
-                    </div>
-                </a>
-
-
-                <!-- 🆕 8개 추가 카드 -->
-
-                <!-- REST API Quick Tester -->
-                <a href="/api-tester" class="tool-card tool-info">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-info">
-                            <i class="fas fa-terminal"></i>
-                        </div>
-                        <h3 class="tool-title">REST API 퀵 테스터</h3>
-                        <p class="tool-description">헤더 · 바디 입력 후 응답을 실시간으로 확인할 수 있습니다</p>
-                    </div>
-                </a>
-
-                <!-- Open Graph / Twitter Card Preview -->
-                <a href="/og-preview" class="tool-card tool-primary">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-primary">
-                            <i class="fas fa-share-square"></i>
-                        </div>
-                        <h3 class="tool-title">OG/Twitter 카드 미리보기</h3>
-                        <p class="tool-description">URL 붙여넣기만 하면 SNS 카드 프리뷰를 즉시 렌더합니다</p>
-                    </div>
-                </a>
-
-                <!-- CSS Gradient Generator -->
-                <a href="/gradient" class="tool-card tool-success">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-success">
-                            <i class="fas fa-palette"></i>
-                        </div>
-                        <h3 class="tool-title">CSS 그라데이션 생성기</h3>
-                        <p class="tool-description">컬러픽커로 그라데이션을 만들고 코드를 복사하세요</p>
-                    </div>
-                </a>
-
-                <!-- Dockerfile Linter & Snippet Maker -->
-                <a href="/docker-lint" class="tool-card tool-dark">
-                    <div class="tool-card-content">
-                        <div class="tool-icon tool-dark">
-                            <i class="fab fa-docker"></i>
-                        </div>
-                        <h3 class="tool-title">Dockerfile Linter</h3>
-                        <p class="tool-description">붙여넣기만 하면 베스트 프랙티스를 자동 분석합니다</p>
-                    </div>
-                </a>
-
                 <!-- .gitignore Generator -->
                 <a href="/gitignore" class="tool-card tool-warning">
                     <div class="tool-card-content">
@@ -641,33 +465,170 @@
                         <p class="tool-description">언어·프레임워크 선택으로 맞춤 gitignore를 생성합니다</p>
                     </div>
                 </a>
-
-                <!-- Emoji Mosaic Generator -->
-                <a href="/emoji-mosaic" class="tool-card tool-danger">
+                <!-- CSS Gradient Generator -->
+                <a href="/gradient" class="tool-card tool-info">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-info">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h3 class="tool-title">CSS 그라데이션 생성기</h3>
+                        <p class="tool-description">컬러픽커로 그라데이션을 만들고 코드를 복사하세요</p>
+                    </div>
+                </a>
+                <!-- Base64 Encoder -->
+                <a href="/base64" class="tool-card tool-danger">
                     <div class="tool-card-content">
                         <div class="tool-icon tool-danger">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3 class="tool-title">Base64 인코딩/디코딩</h3>
+                        <p class="tool-description">텍스트나 파일을 Base64로 인코딩하거나 디코딩할 수 있습니다</p>
+                    </div>
+                </a>
+                <!-- Emoji Mosaic Generator -->
+                <a href="/emoji-mosaic" class="tool-card tool-secondary">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-secondary">
                             <i class="fas fa-smile-beam"></i>
                         </div>
                         <h3 class="tool-title">이모지 모자이크</h3>
                         <p class="tool-description">사진을 🐱🚀🍕 이모지 타일로 변환해 보세요</p>
                     </div>
                 </a>
-
                 <!-- Identicon / Pixel Avatar -->
-                <a href="/identicon" class="tool-card tool-secondary">
+                <a href="/identicon" class="tool-card tool-dark">
                     <div class="tool-card-content">
-                        <div class="tool-icon tool-secondary">
+                        <div class="tool-icon tool-dark">
                             <i class="fas fa-user-secret"></i>
                         </div>
                         <h3 class="tool-title">픽셀 아바타</h3>
-                        <p class="tool-description">문자열 해시로 유니크한 8‑비트 아바타를 만듭니다</p>
+                        <p class="tool-description">문자열 해시로 유니크한 8‑비트 아바타를 만듭니다 (컴퓨터 언어로 만드는 아바타)</p>
                     </div>
                 </a>
-
-                <!-- Virtual ID / Business Card -->
-                <a href="/idcard" class="tool-card tool-info">
+                <!-- File Converter -->
+                <a href="/fileconvert" class="tool-card tool-primary">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-primary">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h3 class="tool-title">파일 타입 변환기</h3>
+                        <p class="tool-description">다양한 파일 형식 간 변환을 지원하는 올인원 컨버터입니다</p>
+                    </div>
+                </a>
+                <!-- Code Compare Tool -->
+                <a href="/compare" class="tool-card tool-success">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-success">
+                            <i class="fas fa-code-branch"></i>
+                        </div>
+                        <h3 class="tool-title">코드/텍스트 비교 도구</h3>
+                        <p class="tool-description">두 텍스트나 코드를 라인별로 비교하여 차이점을 시각적으로 확인할 수 있습니다</p>
+                    </div>
+                </a>
+                <!-- Image Resize -->
+                <a href="/image-resize" class="tool-card tool-warning">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-warning">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h3 class="tool-title">이미지 압축 & 크기 조정</h3>
+                        <p class="tool-description">이미지 파일의 크기를 조정하고 압축하여 웹에 최적화할 수 있습니다</p>
+                    </div>
+                </a>
+                <!-- Password Generator -->
+                <a href="/password" class="tool-card tool-info">
                     <div class="tool-card-content">
                         <div class="tool-icon tool-info">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <h3 class="tool-title">랜덤 패스워드 생성</h3>
+                        <p class="tool-description">보안이 강화된 랜덤 패스워드를 다양한 옵션으로 생성할 수 있습니다</p>
+                    </div>
+                </a>
+                <!-- Markdown Preview -->
+                <a href="/markdown" class="tool-card tool-danger">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-danger">
+                            <i class="fab fa-markdown"></i>
+                        </div>
+                        <h3 class="tool-title">Markdown 미리보기</h3>
+                        <p class="tool-description">마크다운 문법을 실시간으로 미리보기하며 문서를 작성할 수 있습니다</p>
+                    </div>
+                </a>
+                <!-- Open Graph / Twitter Card Preview -->
+                <a href="/og-preview" class="tool-card tool-secondary coming-soon">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-secondary">
+                            <i class="fas fa-share-square"></i>
+                        </div>
+                        <h3 class="tool-title">OG/Twitter 카드 미리보기</h3>
+                        <p class="tool-description">URL 붙여넣기만 하면 SNS 카드 프리뷰를 즉시 렌더합니다</p>
+                    </div>
+                </a>
+                <!-- URL Shortener -->
+                <a href="/shorturl" class="tool-card tool-dark coming-soon">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-dark">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <h3 class="tool-title">URL 단축기</h3>
+                        <p class="tool-description">긴 URL을 짧고 기억하기 쉬운 링크로 변환할 수 있습니다</p>
+                    </div>
+                </a>
+                <!-- Regex Tester -->
+                <a href="/regex" class="tool-card tool-primary coming-soon">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-primary">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 class="tool-title">Regex 테스터</h3>
+                        <p class="tool-description">정규표현식을 테스트하고 매칭 결과를 실시간으로 확인할 수 있습니다</p>
+                    </div>
+                </a>
+                <!-- IP Info -->
+                <a href="/ipinfo" class="tool-card tool-success coming-soon">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-success">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3 class="tool-title">IP 주소 정보 확인</h3>
+                        <p class="tool-description">IP 주소의 위치, ISP, 도메인 등 상세 정보를 조회할 수 있습니다</p>
+                    </div>
+                </a>
+                <!-- Online Notepad -->
+                <a href="/notepad" class="tool-card tool-warning coming-soon">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-warning">
+                            <i class="fas fa-sticky-note"></i>
+                        </div>
+                        <h3 class="tool-title">온라인 메모장</h3>
+                        <p class="tool-description">언제 어디서나 접근 가능한 클라우드 기반 메모장입니다</p>
+                    </div>
+                </a>
+                <!-- REST API Quick Tester -->
+                <a href="/api-tester" class="tool-card tool-info coming-soon">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-info">
+                            <i class="fas fa-terminal"></i>
+                        </div>
+                        <h3 class="tool-title">REST API 퀵 테스터</h3>
+                        <p class="tool-description">헤더 · 바디 입력 후 응답을 실시간으로 확인할 수 있습니다</p>
+                    </div>
+                </a>
+                <!-- Dockerfile Linter & Snippet Maker -->
+                <a href="/docker-lint" class="tool-card tool-danger coming-soon">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-danger">
+                            <i class="fab fa-docker"></i>
+                        </div>
+                        <h3 class="tool-title">Dockerfile Linter</h3>
+                        <p class="tool-description">붙여넣기만 하면 베스트 프랙티스를 자동 분석합니다</p>
+                    </div>
+                </a>
+                <!-- Virtual ID / Business Card -->
+                <a href="/idcard" class="tool-card tool-secondary coming-soon">
+                    <div class="tool-card-content">
+                        <div class="tool-icon tool-secondary">
                             <i class="fas fa-id-card"></i>
                         </div>
                         <h3 class="tool-title">가상 신분증 · 명함</h3>
@@ -680,16 +641,16 @@
             <div class="stats-bar">
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <span class="stat-number">20</span>
+                        <span class="stat-number">20/12</span>
                         <div class="stat-label">사용 가능한 도구</div>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-number">24/7</span>
+                        <span class="stat-number">100%</span>
                         <div class="stat-label">무료 서비스</div>
                     </div>
                     <div class="stat-item">
                         <span class="stat-number">100%</span>
-                        <div class="stat-label">클라이언트 처리</div>
+                        <div class="stat-label">브라우저 처리</div>
                     </div>
                     <div class="stat-item">
                         <span class="stat-number">∞</span>
@@ -709,21 +670,124 @@
     </div>
 
     <!-- Footer -->
-    <footer>
-        <div class="container">
-            <h5><i class="fas fa-code footer-icon"></i>개발자 정보</h5>
-            <p><i class="fas fa-user footer-icon"></i>dev. magolee</p>
-            <p><i class="fas fa-phone footer-icon"></i>tel: 010-9105-9999</p>
-            <p><i class="fas fa-donate footer-icon"></i>후원: 국민은행 - 계좌번호: xxxx</p>
-            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #475569;">
-                <p style="font-size: 0.9rem; opacity: 0.8;">
-                    © 2024 Developer Tools Hub. 모든 도구는 무료로 제공됩니다.
-                </p>
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="container">
+                <div class="row">
+                    <!-- Contact 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-address-book" style="margin-right: 8px; color: var(--primary-color);"></i>
+                            Contact
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://github.com/seunghwan94" target="_blank" rel="noopener">
+                                    <i class="fab fa-github"></i> GitHub
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:seunghwan94@gmail.com">
+                                    <i class="fas fa-envelope"></i> seunghwan94@gmail.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="tel:01091050889">
+                                    <i class="fas fa-phone"></i> 010-9105-0889
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener">
+                                    <i class="fab fa-rocketchat"></i> 카카오톡 오픈채팅
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Projects 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-rocket" style="margin-right: 8px; color: var(--success-color);"></i>
+                            Projects
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://hof.lshwan.com/" target="_blank" rel="noopener">
+                                    <i class="fas fa-home"></i> 가구의 집
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.mplace.site" target="_blank" rel="noopener">
+                                    <i class="fas fa-store"></i> m/place 
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="return false;" style="opacity: 0.6; cursor: not-allowed;">
+                                    <i class="fas fa-tools"></i> Developer Tools Hub
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Location 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-map-marker-alt" style="margin-right: 8px; color: var(--info-color);"></i>
+                            Location
+                        </h5>
+                        <div class="location-info">
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-building"></i>
+                                서울시 양천구 신월동<br>
+                                <!-- <span style="margin-left: 24px;">대륭포스트타워 2차 203호</span> -->
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-phone-alt"></i>
+                                전화번호: 010-9105-0889
+                            </div>
+                            <div>
+                                <i class="fas fa-clock"></i>
+                                평일 09:00 - 18:00
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Follow Us 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-share-alt" style="margin-right: 8px; color: var(--warning-color);"></i>
+                            Follow Us
+                        </h5>
+                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;">
+                            <!-- 최신 도구와 업데이트 소식을 받아보세요! -->
+                        </p>
+                        <div class="social-icons">
+                            <a href="https://github.com/seunghwan94" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener" aria-label="KakaoTalk" title="카카오톡">
+                                <i class="fab fa-rocketchat"></i>
+                            </a>
+                            <a href="mailto:seunghwan94@gmail.com" aria-label="Email" title="이메일">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="tel:01091050889" aria-label="Phone" title="전화">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Bottom -->
+                <div class="footer-bottom">
+                    <p>© 2025 Mago Lee Developer Tools. 취미로 개발하는 개발자 💻</p>
+                </div>
             </div>
         </div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="../static/js/footer.js"></script>
     <script>
         // Add smooth scroll behavior
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
