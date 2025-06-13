@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가상 신분증 · 명함 생성기</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --card-text: #1f2937;
+            --card-text-light: #6b7280;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0; padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,0 1000,0 1000,80 0,100"/></svg>');
+            background-size: cover;
+        }
+        .header .tool-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; z-index: 1;
+        }
+        .header .tool-description {
+            font-size: 1.1rem; opacity: 0.9; position: relative; z-index: 1; margin: 0;
+        }
+
+        .tool-section {
+            background: white; padding: 2rem;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        
+        .controls-panel {
+            display: flex; gap: 1rem; margin-bottom: 2rem;
+        }
+        .action-btn {
+            background-color: var(--primary-color);
+            border: none; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 50px; font-size: 1.1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+        }
+        .action-btn:hover { transform: translateY(-2px); background-color: #4f46e5; }
+        .download-btn { background-color: var(--success-color); }
+        .download-btn:hover { background-color: #059669; }
+        
+        /* ID Card Design */
+        #cardContainer {
+            width: 320px;
+            height: 512px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .card-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+        }
+        #identiconCanvas {
+            width: 128px;
+            height: 128px;
+            border-radius: 50%;
+            border: 4px solid var(--border-color);
+            margin-bottom: 16px;
+            image-rendering: pixelated;
+        }
+        #cardName {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--card-text);
+            margin-bottom: 4px;
+        }
+        #cardTitle {
+            font-size: 1rem;
+            color: var(--card-text-light);
+            margin-bottom: 24px;
+        }
+        .card-info {
+            font-size: 0.85rem;
+            color: var(--card-text);
+            margin-bottom: 8px;
+        }
+        .card-info i {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+        #qrCodeCanvas {
+            width: 100px !important;
+            height: 100px !important;
+            margin-top: auto; /* Push QR to bottom */
+        }
+
+
+        .ad-space {
+            background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 1.5rem; text-align: center; color: #64748b;
+            margin: 1.5rem 20px 0; 
+            min-height: 100px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .ad-space i { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
+
+        footer {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: white; padding: 1.5rem; text-align: center;
+        }
+        footer h5 { color: #e2e8f0; margin-bottom: 0.75rem; font-size: 1.1rem; }
+        footer p { color: #94a3b8; margin: 0.3rem 0; font-size: 0.9rem;}
+        .footer-icon { color: var(--primary-color); margin-right: 8px; }
+
+        @media (max-width: 768px) {
+            .main-container { margin: 10px; border-radius: 15px; }
+            .header .tool-title { font-size: 2rem; }
+            #cardContainer {
+                transform: scale(0.85);
+                transform-origin: top center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h3 class="tool-title"><i class="fas fa-id-card"></i> 가상 신분증 · 명함</h3>
+            <p class="tool-description">랜덤 프로필·QR 포함 신분증/명함 이미지를 생성합니다</p>
+        </div>
+
+        <div class="tool-section">
+            <div class="controls-panel">
+                <button id="generateBtn" class="action-btn"><i class="fas fa-sync-alt"></i> 새로운 신분증 생성</button>
+                <button id="downloadBtn" class="action-btn download-btn"><i class="fas fa-download"></i> 이미지로 다운로드</button>
+            </div>
+
+            <div id="cardContainer">
+                <div class="card-header" id="cardCompany">GEMINI CORP.</div>
+                <canvas id="identiconCanvas"></canvas>
+                <div id="cardName"></div>
+                <div id="cardTitle"></div>
+                <div class="card-info" id="cardId"></div>
+                <div class="card-info" id="cardEmail"></div>
+                <div class="card-info" id="cardPhone"></div>
+                <canvas id="qrCodeCanvas"></canvas>
+            </div>
+        </div>
+
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <h5><i class="fas fa-code footer-icon"></i>개발자 정보</h5>
+            <p><i class="fas fa-user footer-icon"></i>dev. magolee</p>
+            <p><i class="fas fa-phone footer-icon"></i>tel: 010-9105-9999</p>
+            <p><i class="fas fa-donate footer-icon"></i>후원: 국민은행 - 계좌번호: xxxx</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // --- Data for random generation ---
+        const SURNAMES = ['김', '이', '박', '최', '정', '강', '조', '윤', '장', '임'];
+        const GIVEN_NAMES = ['서준', '하준', '도윤', '시우', '지호', '민준', '서아', '하윤', '지안', '서윤', '채원', '지우'];
+        const COMPANIES = ['GEMINI', 'PIXEL-ART', 'NEXUS', 'QUANTUM', 'NOVA'];
+        const DEPARTMENTS = ['AI 개발팀', '데이터 분석팀', 'UX/UI 디자인팀', '클라우드 엔지니어링팀', '신사업 기획팀', '마케팅팀'];
+        const TITLES = ['수석 연구원', '선임 매니저', '전임', '주임', '팀장', '사원'];
+
+        // --- DOM Elements ---
+        const cardCompany = document.getElementById('cardCompany');
+        const identiconCanvas = document.getElementById('identiconCanvas');
+        const cardName = document.getElementById('cardName');
+        const cardTitle = document.getElementById('cardTitle');
+        const cardId = document.getElementById('cardId');
+        const cardEmail = document.getElementById('cardEmail');
+        const cardPhone = document.getElementById('cardPhone');
+        const qrCodeCanvas = document.getElementById('qrCodeCanvas');
+        const cardContainer = document.getElementById('cardContainer');
+        
+        let currentProfile = {};
+
+        // --- Identicon Logic (from previous tool) ---
+        function simpleHash(str) {
+            let hash = 0;
+            if (str.length === 0) return hash;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return hash;
+        }
+
+        function drawIdenticon(str, canvas) {
+            const hash = simpleHash(str);
+            const absoluteHash = Math.abs(hash);
+            const hue = absoluteHash % 360;
+            const color = `hsl(${hue}, 70%, 55%)`;
+            const gridSize = 5;
+            const grid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
+            
+            for (let i = 0; i < 15; i++) {
+                if ((absoluteHash >> i) & 1) {
+                    grid[i % gridSize][Math.floor(i / gridSize)] = true;
+                }
+            }
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < Math.floor(gridSize / 2); c++) {
+                    grid[r][gridSize - 1 - c] = grid[r][c];
+                }
+            }
+            
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+            const pixelSize = size / gridSize;
+            ctx.clearRect(0, 0, size, size);
+            ctx.fillStyle = color;
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    if (grid[r][c]) {
+                        ctx.fillRect(c * pixelSize, r * pixelSize, pixelSize, pixelSize);
+                    }
+                }
+            }
+        }
+
+        // --- Main Generation Logic ---
+        function getRandomItem(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function generateCard() {
+            // 1. Generate Random Profile
+            const surname = getRandomItem(SURNAMES);
+            const givenName = getRandomItem(GIVEN_NAMES);
+            const fullName = surname + givenName;
+            const company = getRandomItem(COMPANIES);
+            const department = getRandomItem(DEPARTMENTS);
+            const title = getRandomItem(TITLES);
+            const email = `${givenName.toLowerCase()}.${surname.toLowerCase()}@${company.toLowerCase()}.dev`;
+            const phone = `010-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`;
+            const employeeId = `${new Date().getFullYear()}-${Math.floor(10000 + Math.random() * 90000)}`;
+            
+            currentProfile = { fullName, company, department, title, email, phone, employeeId };
+
+            // 2. Update HTML Content
+            cardCompany.textContent = `${company} CORP.`;
+            cardName.textContent = fullName;
+            cardTitle.textContent = `${department} / ${title}`;
+            cardId.innerHTML = `<i class="fas fa-id-badge"></i> ${employeeId}`;
+            cardEmail.innerHTML = `<i class="fas fa-envelope"></i> ${email}`;
+            cardPhone.innerHTML = `<i class="fas fa-phone"></i> ${phone}`;
+
+            // 3. Draw Identicon
+            drawIdenticon(fullName, identiconCanvas);
+
+            // 4. Draw QR Code
+            const qrText = `
+                이름: ${fullName}
+                회사: ${company}
+                부서: ${department}
+                직책: ${title}
+                이메일: ${email}
+                연락처: ${phone}
+            `.trim();
+
+            new QRious({
+                element: qrCodeCanvas,
+                value: qrText,
+                size: 100,
+                level: 'M'
+            });
+        }
+        
+        async function downloadCard() {
+            downloadBtn.disabled = true;
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 다운로드 중...';
+
+            try {
+                const canvas = await html2canvas(cardContainer, { 
+                    useCORS: true, 
+                    backgroundColor: null, // Use transparent background
+                    scale: 2 // Increase scale for higher resolution
+                });
+                const link = document.createElement('a');
+                link.download = `id-card_${currentProfile.fullName || 'profile'}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (err) {
+                console.error("다운로드 중 오류 발생:", err);
+                alert("이미지를 다운로드하는 데 실패했습니다.");
+            } finally {
+                 downloadBtn.disabled = false;
+                 downloadBtn.innerHTML = '<i class="fas fa-download"></i> 이미지로 다운로드';
+            }
+        }
+        
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', generateCard);
+        downloadBtn.addEventListener('click', downloadCard);
+        
+        // Initial Generation
+        document.addEventListener('DOMContentLoaded', generateCard);
+
+    </script>
+</body>
+</html>
