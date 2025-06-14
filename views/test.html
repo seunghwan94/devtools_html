@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>3D Tilt Button Demo</title>
+  <title>Fancy 3D Tilt Button Demo</title>
   <style>
     body {
       margin: 0;
@@ -11,65 +11,134 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #222;
+      background: #111;
       overflow: hidden;
+      font-family: sans-serif;
+      color: #fff;
+    }
+    .info {
+      position: absolute;
+      top: 20px;
+      text-align: center;
+      width: 100%;
+      font-size: 1rem;
+      pointer-events: none;
     }
     .button-container {
-      perspective: 1000px;
+      perspective: 1200px;
     }
     .tilt-button {
       --rx: 0;
       --ry: 0;
-      width: 200px;
-      height: 60px;
-      background: linear-gradient(145deg, #3a3a3a, #252525);
-      border: none;
-      border-radius: 12px;
+      --px: 50%;
+      --py: 50%;
+      position: relative;
+      display: inline-block;
+      padding: 20px 50px;
       color: #fff;
       font-size: 1.2rem;
-      font-weight: bold;
+      font-weight: 600;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      border: none;
+      border-radius: 16px;
       cursor: pointer;
       transform-style: preserve-3d;
       transform: rotateX(calc(var(--rx) * 1deg)) rotateY(calc(var(--ry) * 1deg));
       box-shadow:
-        calc(var(--ry) * -1px) calc(var(--rx) * 1px) 20px rgba(0, 0, 0, 0.5),
-        inset calc(var(--ry) * 1px) calc(var(--rx) * -1px) 10px rgba(0, 0, 0, 0.3);
-      transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+        calc(var(--ry) * -1px) calc(var(--rx) * 1px) 30px rgba(0,0,0,0.5),
+        0 0 20px rgba(255,75,43,0.5),
+        inset 0 0 40px rgba(255,255,255,0.2);
+      overflow: hidden;
+      transition: box-shadow 0.2s ease;
+    }
+    .tilt-button::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at var(--px) var(--py), rgba(255,255,255,0.4), transparent 60%);
+      pointer-events: none;
+      transition: background-position 0.1s ease;
+    }
+    .tilt-button:active {
+      box-shadow:
+        calc(var(--ry) * -0.5px) calc(var(--rx) * 0.5px) 15px rgba(0,0,0,0.5),
+        0 0 10px rgba(255,75,43,0.7),
+        inset 0 0 20px rgba(255,255,255,0.3);
+      transform: rotateX(calc(var(--rx) * 1deg)) rotateY(calc(var(--ry) * 1deg)) scale3d(0.96,0.96,0.96);
+      transition: transform 0.05s ease, box-shadow 0.05s ease;
+    }
+    .ripple {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      animation: ripple 600ms ease-out;
+      pointer-events: none;
+    }
+    @keyframes ripple {
+      to { transform: translate(-50%, -50%) scale(15); opacity: 0; }
     }
   </style>
 </head>
 <body>
+  <div class="info">Tap anywhere to enable tilt & then tilt your device</div>
   <div class="button-container">
-    <button class="tilt-button">3D Tilt Me</button>
+    <button class="tilt-button" id="btn">Tilt &amp; Touch Me</button>
   </div>
   <script>
-    const button = document.querySelector('.tilt-button');
+    const btn = document.getElementById('btn');
+    const info = document.querySelector('.info');
 
+    // Orientation handler: update CSS vars
     function handleOrientation(e) {
-      // e.beta: -180 (up) to 180 (down), e.gamma: -90 (left) to 90 (right)
-      const maxTilt = 15; // degrees limit
-      const rx = (e.beta / 90) * maxTilt;  // normalize
-      const ry = (e.gamma / 90) * maxTilt;
-      button.style.setProperty('--rx', -rx);
-      button.style.setProperty('--ry', ry);
+      const maxTilt = 20;
+      const beta = e.beta;   // -180 to 180
+      const gamma = e.gamma; // -90 to 90
+      const rx = Math.max(-maxTilt, Math.min(maxTilt, (beta / 90) * maxTilt));
+      const ry = Math.max(-maxTilt, Math.min(maxTilt, (gamma / 90) * maxTilt));
+      btn.style.setProperty('--rx', -rx);
+      btn.style.setProperty('--ry', ry);
+      // light highlight position
+      const px = (gamma + 90) / 180 * 100;
+      const py = (beta + 180) / 360 * 100;
+      btn.style.setProperty('--px', px + '%');
+      btn.style.setProperty('--py', py + '%');
     }
 
-    if (window.DeviceOrientationEvent) {
-      window.addEventListener('deviceorientation', handleOrientation, true);
-    } else {
-      // Fallback: mousemove
-      document.body.addEventListener('mousemove', e => {
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        const ry = ((e.clientX / w) - 0.5) * 2 * 15;
-        const rx = ((e.clientY / h) - 0.5) * 2 * 15;
-        button.style.setProperty('--rx', rx);
-        button.style.setProperty('--ry', ry);
-      });
+    // Request permission and add listener (iOS support)
+    async function enableTilt() {
+      if (typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          const perm = await DeviceOrientationEvent.requestPermission();
+          if (perm === 'granted') {
+            window.addEventListener('deviceorientation', handleOrientation);
+          }
+        } catch (err) {
+          console.error('Tilt permission error:', err);
+        }
+      } else {
+        window.addEventListener('deviceorientation', handleOrientation);
+      }
+      info.style.display = 'none';
     }
+    // One-time tap to enable
+    document.body.addEventListener('click', enableTilt, { once: true });
+
+    // Ripple on click
+    btn.addEventListener('click', e => {
+      const rect = btn.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      ripple.style.left = (e.clientX - rect.left) + 'px';
+      ripple.style.top = (e.clientY - rect.top) + 'px';
+      btn.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    });
   </script>
 </body>
 </html>

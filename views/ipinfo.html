@@ -1,144 +1,500 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Fancy 3D Tilt Button Demo</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #111;
-      overflow: hidden;
-      font-family: sans-serif;
-      color: #fff;
-    }
-    .info {
-      position: absolute;
-      top: 20px;
-      text-align: center;
-      width: 100%;
-      font-size: 1rem;
-      pointer-events: none;
-    }
-    .button-container {
-      perspective: 1200px;
-    }
-    .tilt-button {
-      --rx: 0;
-      --ry: 0;
-      --px: 50%;
-      --py: 50%;
-      position: relative;
-      display: inline-block;
-      padding: 20px 50px;
-      color: #fff;
-      font-size: 1.2rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      background: linear-gradient(135deg, #ff416c, #ff4b2b);
-      border: none;
-      border-radius: 16px;
-      cursor: pointer;
-      transform-style: preserve-3d;
-      transform: rotateX(calc(var(--rx) * 1deg)) rotateY(calc(var(--ry) * 1deg));
-      box-shadow:
-        calc(var(--ry) * -1px) calc(var(--rx) * 1px) 30px rgba(0,0,0,0.5),
-        0 0 20px rgba(255,75,43,0.5),
-        inset 0 0 40px rgba(255,255,255,0.2);
-      overflow: hidden;
-      transition: box-shadow 0.2s ease;
-    }
-    .tilt-button::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: radial-gradient(circle at var(--px) var(--py), rgba(255,255,255,0.4), transparent 60%);
-      pointer-events: none;
-      transition: background-position 0.1s ease;
-    }
-    .tilt-button:active {
-      box-shadow:
-        calc(var(--ry) * -0.5px) calc(var(--rx) * 0.5px) 15px rgba(0,0,0,0.5),
-        0 0 10px rgba(255,75,43,0.7),
-        inset 0 0 20px rgba(255,255,255,0.3);
-      transform: rotateX(calc(var(--rx) * 1deg)) rotateY(calc(var(--ry) * 1deg)) scale3d(0.96,0.96,0.96);
-      transition: transform 0.05s ease, box-shadow 0.05s ease;
-    }
-    .ripple {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      background: rgba(255,255,255,0.6);
-      border-radius: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      animation: ripple 600ms ease-out;
-      pointer-events: none;
-    }
-    @keyframes ripple {
-      to { transform: translate(-50%, -50%) scale(15); opacity: 0; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP 주소 정보 확인 - IP Address Lookup</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <!-- 기본 파비콘 (favicon.ico) -->
+    <link rel="icon" type="image/x-icon" href="/static/img/favicon.ico" />
+    
+    <!-- PNG 형식 파비콘 (현대 브라우저용) -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png" />
+    
+    <!-- Apple Touch Icon (iOS 홈 화면 추가용) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-icon-180x180.png" />
+    
+    <!-- Android / PWA 매니페스트용 아이콘 -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/img/android-icon-192x192.png" />
+    
+    <!-- Windows 타일용 메타 태그 -->
+    <meta name="msapplication-TileImage" content="/static/img/ms-icon-144x144.png" />
+    <meta name="msapplication-TileColor" content="#6366f1" />
+    
+    <!-- 테마 컬러 (모바일 브라우저 툴바 색상 지정) -->
+    <meta name="theme-color" content="#6366f1" />
+    <link href="../static/css/footer.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --secondary-color: #059669;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --dark-bg: #1e293b;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            min-height: 100vh;
+            margin: 0; padding: 0;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.05) 10px,
+                rgba(255,255,255,0.05) 20px
+            );
+            animation: float 20s linear infinite;
+        }
+        .header .tool-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; position: relative; z-index: 1;
+        }
+        .header .tool-description {
+            font-size: 1.1rem; opacity: 0.9; position: relative; z-index: 1; margin: 0;
+        }
+
+        .tool-section {
+            background: white; padding: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .input-group-custom {
+            display: flex; gap: 0.75rem; margin-bottom: 1.5rem;
+        }
+        .form-control {
+            flex-grow: 1; padding: 0.85rem 1rem; font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-control:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .action-btn {
+            background-color: var(--primary-color);
+            border: none; color: white; padding: 0.85rem 1.25rem;
+            border-radius: 8px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .action-btn:hover {
+            background-color: #059669; /* A bit darker primary */
+            transform: translateY(-1px);
+        }
+        .action-btn:disabled {
+             background: #ccc; cursor: not-allowed; transform: none;
+        }
+        .btn-my-ip {
+            background-color: var(--info-color);
+        }
+        .btn-my-ip:hover {
+            background-color: #2563eb;
+        }
+
+
+        #ipInfoResults {
+            margin-top: 2rem;
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        #ipInfoResults .loading-placeholder, 
+        #ipInfoResults .error-placeholder {
+            text-align: center; color: #6b7280; padding: 2rem; font-style: italic;
+        }
+        #ipInfoResults .loading-placeholder i { font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary-color); }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        .info-item {
+            background-color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .info-item .label {
+            display: block; font-size: 0.8rem; color: #6b7280; margin-bottom: 0.25rem; font-weight: 500;
+        }
+        .info-item .value {
+            font-size: 1rem; color: #1f2937; font-weight: 600; word-break: break-all;
+        }
+        .info-item .value a {
+            color: var(--primary-color); text-decoration: none;
+        }
+        .info-item .value a:hover { text-decoration: underline; }
+        
+        #ipErrorDisplay {
+            background-color: #fee2e2; /* red-100 */
+            color: #991b1b; /* red-800 */
+            border: 1px solid #fecaca; /* red-200 */
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+
+        .ad-space {
+            background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 2rem; text-align: center; color: #64748b;
+            margin: 2rem 0; min-height: 150px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+        .ad-space i { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5; }
+        
+        .hidden { display: none !important; }
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 3;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+            transform: translateX(-5px);
+        }
+        @media (max-width: 768px) {
+            .main-container { margin: 10px; border-radius: 15px; }
+            .header .tool-title { font-size: 2rem; }
+            .input-group-custom { flex-direction: column; }
+            .action-btn { width: 100%; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-  <div class="info">Tap anywhere to enable tilt & then tilt your device</div>
-  <div class="button-container">
-    <button class="tilt-button" id="btn">Tilt &amp; Touch Me</button>
-  </div>
-  <script>
-    const btn = document.getElementById('btn');
-    const info = document.querySelector('.info');
+    <div class="main-container">
+        <div class="header">
+            <a href="/" class="back-btn">
+                <i class="fas fa-arrow-left"></i> 메인으로
+            </a>            
+            <h3 class="tool-title"><i class="fas fa-map-marker-alt"></i> IP 주소 정보 확인</h3>
+            <p class="tool-description">IP 주소의 위치, ISP, 도메인 등 상세 정보를 조회할 수 있습니다</p>
+        </div>
 
-    // Orientation handler: update CSS vars
-    function handleOrientation(e) {
-      const maxTilt = 20;
-      const beta = e.beta;   // -180 to 180
-      const gamma = e.gamma; // -90 to 90
-      const rx = Math.max(-maxTilt, Math.min(maxTilt, (beta / 90) * maxTilt));
-      const ry = Math.max(-maxTilt, Math.min(maxTilt, (gamma / 90) * maxTilt));
-      btn.style.setProperty('--rx', -rx);
-      btn.style.setProperty('--ry', ry);
-      // light highlight position
-      const px = (gamma + 90) / 180 * 100;
-      const py = (beta + 180) / 360 * 100;
-      btn.style.setProperty('--px', px + '%');
-      btn.style.setProperty('--py', py + '%');
-    }
+        <div class="tool-section">
+            <div class="input-group-custom">
+                <input type="text" class="form-control" id="ipAddressInput" placeholder="조회할 IP 주소 입력 (예: 8.8.8.8)">
+                <button class="action-btn" id="lookupIpBtn" title="입력한 IP 조회">
+                    <i class="fas fa-search"></i> IP 정보 조회
+                </button>
+                <button class="action-btn btn-my-ip" id="myIpBtn" title="내 IP 주소 정보 보기">
+                    <i class="fas fa-user-secret"></i> 내 IP 정보
+                </button>
+            </div>
+            <div id="ipErrorDisplay" class="hidden"></div>
 
-    // Request permission and add listener (iOS support)
-    async function enableTilt() {
-      if (typeof DeviceOrientationEvent !== 'undefined' &&
-          typeof DeviceOrientationEvent.requestPermission === 'function') {
-        try {
-          const perm = await DeviceOrientationEvent.requestPermission();
-          if (perm === 'granted') {
-            window.addEventListener('deviceorientation', handleOrientation);
-          }
-        } catch (err) {
-          console.error('Tilt permission error:', err);
+            <div id="ipInfoResults">
+                <div class="loading-placeholder">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>IP 정보를 불러오는 중입니다...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ad-space">
+            <i class="fas fa-ad"></i>
+            <h5>광고 영역</h5>
+            <p>Google AdSense 광고가 여기에 표시됩니다</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="container">
+                <div class="row">
+                    <!-- Contact 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-address-book" style="margin-right: 8px; color: var(--primary-color);"></i>
+                            Contact
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://github.com/seunghwan94" target="_blank" rel="noopener">
+                                    <i class="fab fa-github"></i> GitHub
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:seunghwan94@gmail.com">
+                                    <i class="fas fa-envelope"></i> seunghwan94@gmail.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="tel:01091050889">
+                                    <i class="fas fa-phone"></i> 010-9105-0889
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener">
+                                    <i class="fab fa-rocketchat"></i> 카카오톡 오픈채팅
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Projects 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-rocket" style="margin-right: 8px; color: var(--success-color);"></i>
+                            Projects
+                        </h5>
+                        <ul class="footer-links">
+                            <li>
+                                <a href="https://hof.lshwan.com/" target="_blank" rel="noopener">
+                                    <i class="fas fa-home"></i> 가구의 집
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://www.mplace.site" target="_blank" rel="noopener">
+                                    <i class="fas fa-store"></i> m/place 
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="return false;" style="opacity: 0.6; cursor: not-allowed;">
+                                    <i class="fas fa-tools"></i> Developer Tools Hub
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Location 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-map-marker-alt" style="margin-right: 8px; color: var(--info-color);"></i>
+                            Location
+                        </h5>
+                        <div class="location-info">
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-building"></i>
+                                서울시 양천구 신월동<br>
+                                <!-- <span style="margin-left: 24px;">대륭포스트타워 2차 203호</span> -->
+                            </div>
+                            <div style="margin-bottom: 0.75rem;">
+                                <i class="fas fa-phone-alt"></i>
+                                전화번호: 010-9105-0889
+                            </div>
+                            <div>
+                                <i class="fas fa-clock"></i>
+                                평일 09:00 - 18:00
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Follow Us 컬럼 -->
+                    <div class="col-6 col-md-3 footer-col">
+                        <h5 class="footer-col-title">
+                            <i class="fas fa-share-alt" style="margin-right: 8px; color: var(--warning-color);"></i>
+                            Follow Us
+                        </h5>
+                        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 1rem; line-height: 1.5;">
+                            <!-- 최신 도구와 업데이트 소식을 받아보세요! -->
+                        </p>
+                        <div class="social-icons">
+                            <a href="https://github.com/seunghwan94" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="https://open.kakao.com/o/sjxp87Af" target="_blank" rel="noopener" aria-label="KakaoTalk" title="카카오톡">
+                                <i class="fab fa-rocketchat"></i>
+                            </a>
+                            <a href="mailto:seunghwan94@gmail.com" aria-label="Email" title="이메일">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                            <a href="tel:01091050889" aria-label="Phone" title="전화">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Bottom -->
+                <div class="footer-bottom">
+                    <p>© 2025 Mago Lee Developer Tools. 취미로 개발하는 개발자 💻</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="../static/js/footer.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const ipAddressInput = document.getElementById('ipAddressInput');
+        const lookupIpBtn = document.getElementById('lookupIpBtn');
+        const myIpBtn = document.getElementById('myIpBtn');
+        const ipInfoResults = document.getElementById('ipInfoResults');
+        const ipErrorDisplay = document.getElementById('ipErrorDisplay');
+
+        const API_FIELDS = "status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query";
+        const API_BASE_URL = "https://ip-api.com/json/";
+
+        async function fetchIpInfo(ipAddress = "") {
+            ipInfoResults.innerHTML = `
+                <div class="loading-placeholder">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>IP 정보를 불러오는 중입니다...</p>
+                </div>`;
+            ipErrorDisplay.classList.add('hidden');
+            ipErrorDisplay.textContent = '';
+            lookupIpBtn.disabled = true;
+            myIpBtn.disabled = true;
+
+            try {
+                const apiUrl = `${API_BASE_URL}${ipAddress}?fields=${API_FIELDS}&lang=ko`;
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`API 요청 실패: ${response.status} ${response.statusText}`);
+                }
+                const data = await response.json();
+
+                if (data.status === "success") {
+                    displayIpInfo(data);
+                } else {
+                    throw new Error(data.message || "알 수 없는 API 오류가 발생했습니다.");
+                }
+            } catch (error) {
+                console.error("Error fetching IP info:", error);
+                displayError(error.message);
+            } finally {
+                lookupIpBtn.disabled = false;
+                myIpBtn.disabled = false;
+            }
         }
-      } else {
-        window.addEventListener('deviceorientation', handleOrientation);
-      }
-      info.style.display = 'none';
-    }
-    // One-time tap to enable
-    document.body.addEventListener('click', enableTilt, { once: true });
 
-    // Ripple on click
-    btn.addEventListener('click', e => {
-      const rect = btn.getBoundingClientRect();
-      const ripple = document.createElement('span');
-      ripple.className = 'ripple';
-      ripple.style.left = (e.clientX - rect.left) + 'px';
-      ripple.style.top = (e.clientY - rect.top) + 'px';
-      btn.appendChild(ripple);
-      ripple.addEventListener('animationend', () => ripple.remove());
-    });
-  </script>
+        function displayIpInfo(data) {
+            let resultsHTML = '<h4 class="mb-3">IP 정보: <span class="text-primary fw-bold">' + escapeHTML(data.query) + '</span></h4>';
+            resultsHTML += '<div class="info-grid">';
+
+            const infoMap = [
+                { label: "IP 주소", value: data.query, icon: "fas fa-network-wired" },
+                { label: "국가", value: `${data.country} (${data.countryCode})`, icon: "fas fa-flag" },
+                { label: "지역", value: data.regionName, icon: "fas fa-map-marked-alt" },
+                { label: "도시", value: data.city, icon: "fas fa-city" },
+                { label: "우편번호", value: data.zip, icon: "fas fa-mail-bulk" },
+                { label: "시간대", value: data.timezone, icon: "fas fa-clock" },
+                { label: "ISP", value: data.isp, icon: "fas fa-wifi" },
+                { label: "기관", value: data.org, icon: "fas fa-building" },
+                { label: "ASN", value: data.as, icon: "fas fa-sitemap" },
+                { 
+                    label: "위치 (위도, 경도)", 
+                    value: `${data.lat}, ${data.lon}`, 
+                    icon: "fas fa-compass",
+                    mapLink: `https://www.openstreetmap.org/?mlat=${data.lat}&mlon=${data.lon}#map=11/${data.lat}/${data.lon}`
+                }
+            ];
+
+            infoMap.forEach(item => {
+                if (item.value) { // Only display if value exists
+                    let valueHTML = escapeHTML(item.value);
+                    if(item.mapLink){
+                        valueHTML += ` <a href="${item.mapLink}" target="_blank" title="지도에서 보기"><i class="fas fa-external-link-alt fa-xs"></i></a>`;
+                    }
+                    resultsHTML += `
+                        <div class="info-item">
+                            <span class="label"><i class="${item.icon} me-1 text-muted"></i> ${item.label}</span>
+                            <span class="value">${valueHTML}</span>
+                        </div>`;
+                }
+            });
+            resultsHTML += '</div>';
+            ipInfoResults.innerHTML = resultsHTML;
+        }
+
+        function displayError(message) {
+            ipInfoResults.innerHTML = `
+                <div class="error-placeholder">
+                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                    <p>정보를 불러올 수 없습니다.</p>
+                </div>`;
+            ipErrorDisplay.textContent = `오류: ${message}`;
+            ipErrorDisplay.classList.remove('hidden');
+        }
+        
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return str.replace(/[&<>"']/g, match => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[match]));
+        }
+
+        lookupIpBtn.addEventListener('click', () => {
+            const ipToLookup = ipAddressInput.value.trim();
+            if (ipToLookup) {
+                fetchIpInfo(ipToLookup);
+            } else {
+                // fetchIpInfo(); // Or display a message to enter an IP
+                ipErrorDisplay.textContent = '조회할 IP 주소를 입력해주세요. 내 IP를 보려면 "내 IP 정보" 버튼을 클릭하세요.';
+                ipErrorDisplay.classList.remove('hidden');
+                ipInfoResults.innerHTML = `<div class="error-placeholder"><p>조회할 IP 주소를 입력하세요.</p></div>`;
+            }
+        });
+
+        myIpBtn.addEventListener('click', () => {
+            ipAddressInput.value = ''; // Clear input when fetching own IP
+            fetchIpInfo();
+        });
+        
+        ipAddressInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                lookupIpBtn.click();
+            }
+        });
+
+        // Fetch user's IP on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchIpInfo();
+        });
+    </script>
 </body>
 </html>
