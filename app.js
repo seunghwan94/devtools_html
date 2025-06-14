@@ -6,6 +6,9 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views2'));
+
 // ◼︎ Middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -65,7 +68,8 @@ const tools = [
   { name: 'gitignore',      title: '.gitignore 생성기' },
   { name: 'emoji-mosaic',   title: '이모지 모자이크 생성기' },
   { name: 'identicon',      title: '픽셀 아바타/Identicon' },
-  { name: 'idcard',         title: '가상 신분증/명함 생성기' }
+  { name: 'idcard',         title: '가상 신분증/명함 생성기' },
+  { name: 'test', title: 'test'}
 ];
 
 // Dynamic page route for each tool
