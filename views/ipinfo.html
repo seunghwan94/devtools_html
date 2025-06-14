@@ -14,6 +14,15 @@
       background: #111;
       overflow: hidden;
       font-family: sans-serif;
+      color: #fff;
+    }
+    .info {
+      position: absolute;
+      top: 20px;
+      text-align: center;
+      width: 100%;
+      font-size: 1rem;
+      pointer-events: none;
     }
     .button-container {
       perspective: 1200px;
@@ -60,7 +69,6 @@
       transform: rotateX(calc(var(--rx) * 1deg)) rotateY(calc(var(--ry) * 1deg)) scale3d(0.96,0.96,0.96);
       transition: transform 0.05s ease, box-shadow 0.05s ease;
     }
-    /* Ripple effect */
     .ripple {
       position: absolute;
       width: 20px;
@@ -77,43 +85,49 @@
   </style>
 </head>
 <body>
+  <div class="info">Tap anywhere to enable tilt & then tilt your device</div>
   <div class="button-container">
     <button class="tilt-button" id="btn">Tilt &amp; Touch Me</button>
   </div>
   <script>
     const btn = document.getElementById('btn');
+    const info = document.querySelector('.info');
 
-    // Tilt effect
+    // Orientation handler: update CSS vars
     function handleOrientation(e) {
-      const maxTilt = 20; // max degrees
-      const beta = e.beta;   // front-back: -180 to 180
-      const gamma = e.gamma; // left-right: -90 to 90
+      const maxTilt = 20;
+      const beta = e.beta;   // -180 to 180
+      const gamma = e.gamma; // -90 to 90
       const rx = Math.max(-maxTilt, Math.min(maxTilt, (beta / 90) * maxTilt));
       const ry = Math.max(-maxTilt, Math.min(maxTilt, (gamma / 90) * maxTilt));
-      // Update rotation
       btn.style.setProperty('--rx', -rx);
       btn.style.setProperty('--ry', ry);
-      // Update highlight position
+      // light highlight position
       const px = (gamma + 90) / 180 * 100;
       const py = (beta + 180) / 360 * 100;
       btn.style.setProperty('--px', px + '%');
       btn.style.setProperty('--py', py + '%');
     }
-    if (window.DeviceOrientationEvent) {
-      window.addEventListener('deviceorientation', handleOrientation, true);
-    } else {
-      // Fallback: mousemove
-      document.body.addEventListener('mousemove', e => {
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        const ry = ((e.clientX / w) - 0.5) * 2 * 20;
-        const rx = -((e.clientY / h) - 0.5) * 2 * 20;
-        btn.style.setProperty('--rx', rx);
-        btn.style.setProperty('--ry', ry);
-        btn.style.setProperty('--px', (e.clientX / w * 100) + '%');
-        btn.style.setProperty('--py', (e.clientY / h * 100) + '%');
-      });
+
+    // Request permission and add listener (iOS support)
+    async function enableTilt() {
+      if (typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          const perm = await DeviceOrientationEvent.requestPermission();
+          if (perm === 'granted') {
+            window.addEventListener('deviceorientation', handleOrientation);
+          }
+        } catch (err) {
+          console.error('Tilt permission error:', err);
+        }
+      } else {
+        window.addEventListener('deviceorientation', handleOrientation);
+      }
+      info.style.display = 'none';
     }
+    // One-time tap to enable
+    document.body.addEventListener('click', enableTilt, { once: true });
 
     // Ripple on click
     btn.addEventListener('click', e => {
